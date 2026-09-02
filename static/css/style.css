@@ -5,14 +5,16 @@
 }
 
 :root {
-    --ink: #1c1917;
-    --paper: #faf6f0;
-    --accent: #d95d39;
-    --accent-dark: #a8442a;
-    --line: #e3d9c9;
-    --text-muted: #6b6459;
+    --ink: #ead8bd;
+    --paper: #2b1b16;
+    --accent: #b88a5a;
+    --accent-dark: #d0a875;
+    --line: #594039;
+    --text-muted: #bca995;
     --radius: 4px;
 }
+
+
 
 body {
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
