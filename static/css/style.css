@@ -14,8 +14,6 @@
     --radius: 4px;
 }
 
-
-
 body {
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--ink);
@@ -193,5 +191,67 @@ h1, .brand {
 
     .social-links {
         justify-content: flex-start;
+    }
+}
+
+.hero-experience {
+    
+}
+
+.horizontal-line {
+    height: 1px;
+    background-color: var(--line);
+    border: none;
+    margin-bottom: 4rem;
+}
+
+.portfolio-header {
+    margin-bottom: 3rem; 
+    color: var(--accent-dark);
+}
+
+.portfolio-kicker {
+    margin-bottom: 0.5rem;
+}
+
+.portfolio-item {
+    margin-bottom: 2rem;
+}
+
+.portfolio-item summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.portfolio-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.portfolio-item summary::marker {
+    content: "";
+}
+
+.portfolio-item summary h3 {
+    display: inline;
+}
+
+.portfolio-description {
+    color: var(--text-muted);
+    margin-top: 1rem;
+}
+
+.portfolio-item[open] .portfolio-description {
+    animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
