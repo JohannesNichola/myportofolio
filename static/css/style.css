@@ -255,3 +255,67 @@ h1, .brand {
         transform: translateY(0);
     }
 }
+
+.experience-timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+/* Garis utama timeline */
+.experience-timeline::before {
+    content: "";
+    position: absolute;
+
+    left: 4px;
+    top: 6px;
+    bottom: 6px;
+
+    width: 1px;
+    background: var(--accent-dark);
+}
+
+.experience-item {
+    position: relative;
+    padding-left: 1rem;
+    padding-bottom: 2rem;
+}
+
+/* Dot */
+.experience-dot {
+    position: absolute;
+
+    left: 0;
+    top: 0.45rem;
+
+    width: 8px;
+    height: 8px;
+
+    box-sizing: border-box;
+
+    background: var(--background);
+    border: 1.5px solid var(--accent-dark);
+    border-radius: 50%;
+
+    z-index: 1;
+}
+
+.experience-item:last-child {
+    padding-bottom: 0;
+}
+
+.experience-content h4 {
+    margin: 0 0 0.3rem;
+    font-size: 1rem;
+}
+
+.experience-meta {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.experience-detail {
+    margin: 0.8rem 0 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+}

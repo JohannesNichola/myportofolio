@@ -8,13 +8,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
     <header class="site-header">
         <div class="container">
             <a href="#profile" class="brand">Johannes Nichola Simatupang</a>
             <nav>
-                <a href="#profile">Profile</a>
+                <a href="#profile" aria-label="Profile">
+                    <i class="fa-solid fa-user"></i>
+                </a>
             </nav>
         </div>
     </header>
@@ -66,17 +69,92 @@
                         <summary>
                             <h3>Experience</h3>
                         </summary>
+
                         <div class="portfolio-description">
-                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets.</p>
+
+                            <div class="experience-timeline">
+
+                                <!-- CRM Specialist -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+                                    
+                                    <div class="experience-content">
+                                        <h4>CRM Specialist</h4>
+                                        
+                                        <p class="experience-meta">
+                                            Tri Agung Nusantara (TAN) Group &middot; Full Time &middot; Jul 2026 – Present
+                                        </p>
+
+                                        <p class="experience-detail">
+                                            Managed customer relationship processes and CRM
+                                            activities. Analyzed and prepared customer data to support committee 
+                                            analysis and decision-making, while contributing to initiatives 
+                                            aimed at improving the overall customer experience.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <!-- IT Support -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+
+                                    <div class="experience-content">
+                                        <h4>IT Support</h4>
+
+                                        <p class="experience-meta">
+                                            Tri Agung Nusantara (TAN) Group &middot; Full Time &middot; Oct 2025 – Jul 2026
+                                        </p>
+
+                                        <p class="experience-detail">
+                                            Provided technical support and troubleshooting
+                                            for hardware, software, network and company systems.
+                                            Assisted employees with technical issues and
+                                            maintained IT infrastructure.
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+
                         </div>
                     </details>
-
                     <details class="portfolio-item" id="education">
                         <summary>
                             <h3>Education</h3>
                         </summary>
                         <div class="portfolio-description">
-                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets.</p>
+
+                            <div class="experience-timeline">
+
+                                <!-- Universitas Indonesia -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+
+                                    <div class="experience-content">
+                                        <h4>Universitas Indonesia</h4>
+
+                                        <p class="experience-meta">
+                                            S1 Sistem Informasi &middot; Jul 2024 – Present
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- SMAN 2 Depok -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+
+                                    <div class="experience-content">
+                                        <h4>SMAN 2 Depok</h4>
+
+                                        <p class="experience-meta">
+                                            MIPA &middot; Jul 2021 – Jul 2024
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+
                         </div>
                     </details>
 
@@ -85,7 +163,105 @@
                             <h3>Skills</h3>
                         </summary>
                         <div class="portfolio-description">
-                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets.</p>
+                            <div class="experience-timeline">
+
+                                <!-- Analytical Thinking -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+
+                                    <div class="experience-content">
+                                        <h4>Analytical Thinking</h4>
+
+                                        <p class="experience-meta">
+                                            Soft Skill
+                                        </p>
+
+                                        <p class="experience-detail">
+                                            Able to analyze problems, identify patterns,
+                                            evaluate information, and develop logical solutions.                                        
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Public Speaking -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+
+                                    <div class="experience-content">
+                                        <h4>Public Speaking</h4>
+
+                                        <p class="experience-meta">
+                                            Soft Skill
+                                        </p>
+
+                                        <p class="experience-detail">
+                                            Able to communicate ideas clearly and confidently
+                                            in professional, collaborative, and public settings.                                        
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Accounting & Corporate Finance -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+
+                                    <div class="experience-content">
+                                        <h4>Accounting & Corporate Finance</h4>
+
+                                        <p class="experience-meta">
+                                            Technical Skill &middot; Financial Statement &middot; Chart &middot; Excel
+                                        </p>
+
+                                        <p class="experience-detail">
+                                            Understanding the accounting process from recording
+                                            transactions to preparing financial statements, as well
+                                            as corporate finance concepts including Time Value of
+                                            Money, Present Value, Future Value, NPV, IRR, ROI, tax
+                                            and other financial analysis concepts.                                        
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- ERP Systems -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+                                    
+                                    <div class="experience-content">
+                                        <h4>ERP Systems</h4>
+                                        
+                                        <p class="experience-meta">
+                                            Technical Skill &middot; Business Flow Chart 
+                                        </p>
+
+                                        <p class="experience-detail">
+                                            Understanding of Enterprise Resource Planning (ERP) systems
+                                            and their role in integrating business processes, including
+                                            finance, operations (PO, SO, DO, etc.), inventory, and customer management.
+                                            Familiar with Odoo and TanGroup ERP (Involved in the production).
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Basic Programming -->
+                                <div class="experience-item">
+                                    <span class="experience-dot"></span>
+
+                                    <div class="experience-content">
+                                        <h4>Basic Programming</h4>
+
+                                        <p class="experience-meta">
+                                            Technical Skill &middot; Computational Thinking &middot; Web Dev 
+                                        </p>
+
+                                        <p class="experience-detail">
+                                            Basic understanding of Python, Java, HTML, CSS,
+                                            JavaScript, Django Framework, Flutter Framework,
+                                            Dart, Canva, and Figma.
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
                     </details>
 
@@ -102,7 +278,7 @@
 
             </div>
         </section>
-        
+
     </main>
 
     <footer class="site-footer">
