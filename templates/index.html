@@ -8,8 +8,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
+
 <body>
     <header class="site-header">
         <div class="container">
@@ -22,7 +25,16 @@
         </div>
     </header>
 
+    <!-- ===================================================== 
+    MAIN CONTENT 
+    ===================================================== -->
+
     <main>
+
+        <!-- ================================================= 
+        PROFILE / HERO SECTION 
+        ================================================= -->
+
         <section class="hero" id="profile">
             <div class="container hero-grid">
                 <div class="hero-identity">
@@ -54,6 +66,10 @@
             </div>
         </section>
 
+        <!-- ================================================= 
+        PORTFOLIO SECTION 
+        ================================================= -->
+
         <section class="portfolio" id="portfolio">
             <div class="container">
                 
@@ -64,6 +80,10 @@
                 </div>
 
                 <div class="portfolio-content">
+
+                    <!-- ========================================= 
+                    EXPERIENCE 
+                    ========================================= -->
 
                     <details class="portfolio-item" id="experience">
                         <summary>
@@ -119,6 +139,11 @@
 
                         </div>
                     </details>
+
+                    <!-- ========================================= 
+                    EDUCATION 
+                    ========================================= -->
+
                     <details class="portfolio-item" id="education">
                         <summary>
                             <h3>Education</h3>
@@ -157,6 +182,10 @@
 
                         </div>
                     </details>
+
+                    <!-- =========================================
+                    SKILLS 
+                    ========================================= -->
 
                     <details class="portfolio-item" id="skills">
                         <summary>
@@ -265,12 +294,75 @@
                         </div>
                     </details>
 
+                    <!-- ========================================= 
+                    PROJECTS 
+                    ========================================= -->
+
                     <details class="portfolio-item" id="projects">
                         <summary>
                             <h3>Projects</h3>
                         </summary>
+
                         <div class="portfolio-description">
-                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets.</p>
+                            <div class="projects-grid">
+                                <div class="project-card">
+
+                                    <h4>TanGroup ERP Development Project</h4>
+
+                                    <p>
+                                        Contributed as a functional consultant in ERP development and 
+                                        implementation, providing business and financial process insights. 
+                                        Collaborated with developers and users across logistics, purchasing, 
+                                        outlet operations, and finance, while supporting system testing and user training.
+                                    </p>
+
+                                    <div class="project-tech">
+                                        <span>ERP</span>
+                                        <span>Business Process</span>
+                                        <span>Finance</span>
+                                        <span>System Testing</span>
+                                        <span>User Training</span>
+                                    </div>
+
+                                </div>
+
+                                <div class="project-image">
+                                    <div class="project-slider">
+
+                                        <!-- Radio -->
+                                        <input type="radio" name="project-slide" id="slide-1" checked>
+                                        <input type="radio" name="project-slide" id="slide-2">
+                                        <input type="radio" name="project-slide" id="slide-3">
+
+                                        <!-- Images -->
+                                        <div class="slides">
+
+                                            <div class="slide">
+                                                <img src="/static/image/erp_login.png" alt="ERP Project Login">
+                                            </div>
+
+                                            <div class="slide">
+                                                <img src="/static/image/erp_homepage.png" alt="ERP Project Homepage">
+                                            </div>
+
+                                            <div class="slide">
+                                                <img src="/static/image/erp_dashboardtenant.png" alt="ERP Project Dashboard Tenant 3">
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Dots -->
+                                        <div class="slider-dots">
+
+                                            <label for="slide-1"></label>
+                                            <label for="slide-2"></label>
+                                            <label for="slide-3"></label>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </details>
 
