@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Johannes Nichola Simatupang - Portfolio</title>
+    <title>{{ name }} - Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -16,11 +16,10 @@
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="#profile" class="brand">Johannes Nichola Simatupang</a>
+            <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
             <nav>
-                <a href="#profile" aria-label="Profile">
-                    <i class="fa-solid fa-user"></i>
-                </a>
+                <a href="{% url 'main:show_main' %}">Profile</a>
+                <a href="{% url 'main:show_experience' %}">Experience</a>
             </nav>
         </div>
     </header>
@@ -39,22 +38,22 @@
             <div class="container hero-grid">
                 <div class="hero-identity">
                     <p class="hero-kicker">Information Systems &middot; Universitas Indonesia</p>
-                    <h1>Johannes Nichola Simatupang</h1>
+                    <h1>{{ name }}</h1>
                 </div>
                 <div class="hero-photo">
                     <div class="photo-block"></div>
-                    <img class="avatar" src="/static/image/johannes.png" alt="Photo of Johannes">
+                    <img class="avatar" src="/static/image/johannes.png" alt="Photo of {{ name }}">
                 </div>
                 <div class="hero-details">
-                    <p class="bio">An Information Systems student at Universitas Indonesia with a strong interest in finance and business. Currently working as an IT Support and CRM Specialist at an fnb holding company. Love to learn new things every day (there is always room for growth).</p>
+                    <p class="bio">{{ bio }}</p>
                     <dl class="meta-list">
                         <div class="meta-row">
                             <dt>NPM</dt>
-                            <dd>2406495930</dd>
+                            <dd>{{ npm }}</dd>
                         </div>
                         <div class="meta-row">
                             <dt>Program</dt>
-                            <dd>S1 Sistem Informasi</dd>
+                            <dd>{{ study_program }}</dd>
                         </div>
                     </dl>
                     <div class="social-links">
@@ -85,7 +84,7 @@
                     EXPERIENCE 
                     ========================================= -->
 
-                    <details class="portfolio-item" id="experience">
+                    <!-- <details class="portfolio-item" id="experience">
                         <summary>
                             <h3>Experience</h3>
                         </summary>
@@ -139,7 +138,7 @@
 
                         </div>
                     </details>
-
+ -->
                     <!-- ========================================= 
                     EDUCATION 
                     ========================================= -->
@@ -375,7 +374,7 @@
 
     <footer class="site-footer">
         <div class="container">
-            <p>&copy; 2026 Johannes Nichola Simatupang. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
+            <p>&copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
         </div>
     </footer>
 </body>
