@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from django.test import TestCase
 from django.urls import reverse
@@ -13,7 +13,7 @@ class MainTest(TestCase):
         company="Universitas Indonesia",
         description="Membantu mahasiswa memahami pengembangan web.",
         category="part-time",
-        started_at=timezone.make_aware(datetime(2026, 1, 1)),
+        started_at=date(2026, 1, 1),
         ended_at=None,
         )
 
@@ -64,13 +64,12 @@ class MainTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
-            "Belum ada pengalaman yang ditambahkan."
+            "No experience has been added yet."
         )
 
     def test_completed_experience(self):
-        self.experience.ended_at = timezone.make_aware(
-            datetime(2026, 8, 1)
-        )
+        self.experience.ended_at = date(2026, 8, 1)
+        
         self.experience.save()
 
         response = self.client.get(reverse("main:show_experience"))
