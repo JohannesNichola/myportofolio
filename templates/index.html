@@ -76,293 +76,41 @@
                 
                 <hr class="horizontal-line">
 
-                <div class="portfolio-header">
-                    <p class="portfolio-kicker">Background & Work</p>
-                </div>
+                <!-- =========================================
+                SKILLS 
+                ========================================= -->
 
-                <div class="portfolio-content">
+                <details class="portfolio-item" id="skills">
+                    <summary>
+                        <h3>Skills</h3>
+                    </summary>
+                    <div class="portfolio-description">
+                        <div class="skill-timeline">
 
-                    <!-- ========================================= 
-                    EXPERIENCE 
-                    ========================================= -->
+                            {% for skill in skill_list %}
+                                <div class="skill-item">
+                                    <span class="skill-dot"></span>
 
-                    <!-- <details class="portfolio-item" id="experience">
-                        <summary>
-                            <h3>Experience</h3>
-                        </summary>
+                                    <div class="skill-content">
+                                        <h4>{{ skill.title }}</h4>
 
-                        <div class="portfolio-description">
-
-                            <div class="experience-timeline">
-
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-                                    
-                                    <div class="experience-content">
-                                        <h4>CRM Specialist</h4>
-                                        
-                                        <p class="experience-meta">
-                                            Tri Agung Nusantara (TAN) Group &middot; Full Time &middot; Jul 2026 – Present
+                                        <p class="skill-meta">
+                                            {{ skill.get_meta_display }}
                                         </p>
 
-                                        <p class="experience-detail">
-                                            Managed customer relationship processes and CRM
-                                            activities. Analyzed and prepared customer data to support committee 
-                                            analysis and decision-making, while contributing to initiatives 
-                                            aimed at improving the overall customer experience.
-                                        </p>
-                                    </div>
-
-                                </div>
-
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-
-                                    <div class="experience-content">
-                                        <h4>IT Support</h4>
-
-                                        <p class="experience-meta">
-                                            Tri Agung Nusantara (TAN) Group &middot; Full Time &middot; Oct 2025 – Jul 2026
-                                        </p>
-
-                                        <p class="experience-detail">
-                                            Provided technical support and troubleshooting
-                                            for hardware, software, network and company systems.
-                                            Assisted employees with technical issues and
-                                            maintained IT infrastructure.
+                                        <p class="skill-detail">
+                                            {{ skill.description }}
                                         </p>
                                     </div>
                                 </div>
-
-                            </div>
-
-                        </div>
-                    </details> -->
-
-                    <!-- ========================================= 
-                    EDUCATION 
-                    ========================================= -->
-
-                    <!-- <details class="portfolio-item" id="education">
-                        <summary>
-                            <h3>Education</h3>
-                        </summary>
-                        <div class="portfolio-description">
-
-                            <div class="experience-timeline">
-
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-
-                                    <div class="experience-content">
-                                        <h4>Universitas Indonesia</h4>
-
-                                        <p class="experience-meta">
-                                            S1 Sistem Informasi &middot; Jul 2024 – Present
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-
-                                    <div class="experience-content">
-                                        <h4>SMAN 2 Depok</h4>
-
-                                        <p class="experience-meta">
-                                            MIPA &middot; Jul 2021 – Jul 2024
-                                        </p>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                        </div>
-                    </details> -->
-
-                    <!-- =========================================
-                    SKILLS 
-                    ========================================= -->
-
-                    <details class="portfolio-item" id="skills">
-                        <summary>
-                            <h3>Skills</h3>
-                        </summary>
-                        <div class="portfolio-description">
-                            <div class="experience-timeline">
-
-                                <!-- Analytical Thinking -->
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-
-                                    <div class="experience-content">
-                                        <h4>Analytical Thinking</h4>
-
-                                        <p class="experience-meta">
-                                            Soft Skill
-                                        </p>
-
-                                        <p class="experience-detail">
-                                            Able to analyze problems, identify patterns,
-                                            evaluate information, and develop logical solutions.                                        
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Public Speaking -->
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-
-                                    <div class="experience-content">
-                                        <h4>Public Speaking</h4>
-
-                                        <p class="experience-meta">
-                                            Soft Skill
-                                        </p>
-
-                                        <p class="experience-detail">
-                                            Able to communicate ideas clearly and confidently
-                                            in professional, collaborative, and public settings.                                        
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Accounting & Corporate Finance -->
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-
-                                    <div class="experience-content">
-                                        <h4>Accounting & Corporate Finance</h4>
-
-                                        <p class="experience-meta">
-                                            Technical Skill &middot; Financial Statement &middot; Chart &middot; Excel
-                                        </p>
-
-                                        <p class="experience-detail">
-                                            Understanding the accounting process from recording
-                                            transactions to preparing financial statements, as well
-                                            as corporate finance concepts including Time Value of
-                                            Money, Present Value, Future Value, NPV, IRR, ROI, tax
-                                            and other financial analysis concepts.                                        
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                <!-- ERP Systems -->
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-                                    
-                                    <div class="experience-content">
-                                        <h4>ERP Systems</h4>
-                                        
-                                        <p class="experience-meta">
-                                            Technical Skill &middot; Business Flow Chart 
-                                        </p>
-
-                                        <p class="experience-detail">
-                                            Understanding of Enterprise Resource Planning (ERP) systems
-                                            and their role in integrating business processes, including
-                                            finance, operations (PO, SO, DO, etc.), inventory, and customer management.
-                                            Familiar with Odoo and TanGroup ERP (Involved in the production).
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Basic Programming -->
-                                <div class="experience-item">
-                                    <span class="experience-dot"></span>
-
-                                    <div class="experience-content">
-                                        <h4>Basic Programming</h4>
-
-                                        <p class="experience-meta">
-                                            Technical Skill &middot; Computational Thinking &middot; Web Dev 
-                                        </p>
-
-                                        <p class="experience-detail">
-                                            Basic understanding of Python, Java, HTML, CSS,
-                                            JavaScript, Django Framework, Flutter Framework,
-                                            Dart, Canva, and Figma.
-                                        </p>
-                                    </div>
-                                </div>
-
-                            </div>
+                            {% empty %}
+                                <p class="empty-state">
+                                    No skill has been added yet.
+                                </p>
+                            {% endfor %}
                         </div>
                     </details>
-
-                    <!-- ========================================= 
-                    PROJECTS 
-                    ========================================= -->
-
-                    <!-- <details class="portfolio-item" id="projects">
-                        <summary>
-                            <h3>Projects</h3>
-                        </summary>
-
-                        <div class="portfolio-description">
-                            <div class="projects-grid">
-                                <div class="project-card">
-
-                                    <h4>TanGroup ERP Development Project</h4>
-
-                                    <p>
-                                        Contributed as a functional consultant in ERP development and 
-                                        implementation, providing business and financial process insights. 
-                                        Collaborated with developers and users across logistics, purchasing, 
-                                        outlet operations, and finance, while supporting system testing and user training.
-                                    </p>
-
-                                    <div class="project-tech">
-                                        <span>ERP</span>
-                                        <span>Business Process</span>
-                                        <span>Finance</span>
-                                        <span>System Testing</span>
-                                        <span>User Training</span>
-                                    </div>
-
-                                </div>
-
-                                <div class="project-image">
-                                    <div class="project-slider">
-
-                                        <input type="radio" name="project-slide" id="slide-1" checked>
-                                        <input type="radio" name="project-slide" id="slide-2">
-                                        <input type="radio" name="project-slide" id="slide-3">
-
-                                        <div class="slides">
-
-                                            <div class="slide">
-                                                <img src="/static/image/erp_login.png" alt="ERP Project Login">
-                                            </div>
-
-                                            <div class="slide">
-                                                <img src="/static/image/erp_homepage.png" alt="ERP Project Homepage">
-                                            </div>
-
-                                            <div class="slide">
-                                                <img src="/static/image/erp_dashboardtenant.png" alt="ERP Project Dashboard Tenant 3">
-                                            </div>
-
-                                        </div>
-
-                                        <div class="slider-dots">
-
-                                            <label for="slide-1"></label>
-                                            <label for="slide-2"></label>
-                                            <label for="slide-3"></label>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </details> -->
-
                 </div>
-
-            </div>
         </section>
 
     </main>

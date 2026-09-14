@@ -102,3 +102,18 @@ class ProjectImage(models.Model):
 
     def __str__(self):
         return f"{self.project.title} - Image {self.order}"
+
+
+class Skill(models.Model):
+    SKILL_CHOICES = [
+        ('soft', 'Soft Skill'),
+        ('technical', 'Technical Skill'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=SKILL_CHOICES, default='technical')
+    description = models.TextField()
+
+    def __str__(self):
+        return self.title

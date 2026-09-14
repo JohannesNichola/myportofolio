@@ -277,17 +277,17 @@ h1, .brand {
 
 
 /* =========================================================
-   9. EXPERIENCE & EDUCATION TIMELINE / SKILLS 
+   9. SKILLS 
    ========================================================= */
 
-.experience-timeline {
+.skill-timeline {
     position: relative;
     padding-left: 1.5rem;
 }
 
 /* Timeline Main Line */
 
-.experience-timeline::before {
+.skill-timeline::before {
     content: "";
     position: absolute;
 
@@ -301,19 +301,19 @@ h1, .brand {
 
 /* Timeline Item */
 
-.experience-item {
+.skill-item {
     position: relative;
     padding-left: 1rem;
     padding-bottom: 2rem;
 }
 
-.experience-item:last-child {
+.skill-item:last-child {
     padding-bottom: 0;
 }
 
 /* Timeline Dot */
 
-.experience-dot {
+.skill-dot {
     position: absolute;
 
     left: 0;
@@ -333,18 +333,18 @@ h1, .brand {
 
 /* Timeline Content */
 
-.experience-content h4 {
+.skill-content h4 {
     margin: 0 0 0.3rem;
     font-size: 1rem;
 }
 
-.experience-meta {
+.skill-meta {
     margin: 0;
     color: var(--text-muted);
     font-size: 0.9rem;
 }
 
-.experience-detail {
+.skill-detail {
     margin: 0.8rem 0 0;
     color: var(--text-muted);
     line-height: 1.6;
@@ -352,7 +352,7 @@ h1, .brand {
 
 
 /* =========================================================
-   12. FOOTER
+   10. FOOTER
    ========================================================= */
 
 .site-footer {
@@ -364,7 +364,7 @@ h1, .brand {
 
    
 /* =========================================================
-   13. RESPONSIVE DESIGN
+   11. RESPONSIVE DESIGN
    ========================================================= */
 
 /* Tablet & Smaller Screens */
@@ -404,7 +404,7 @@ h1, .brand {
 }
 
 /* =========================================================
-   13. DJANGO APPS (EXPERIENCE SECTION)
+   12. DJANGO APPS (EXPERIENCE SECTION)
    ========================================================= */
 
 .experience-section {
@@ -445,7 +445,7 @@ h1, .brand {
 
 .experience-description,
 .empty-state {
-    color: var(--paper);
+    color: var(--ink);
 }
 
 .experience-status {
@@ -456,7 +456,7 @@ h1, .brand {
 }
 
 /* =========================================================
-   14. DJANGO APPS (EDUCATION SECTION)
+   13. DJANGO APPS (EDUCATION SECTION)
    ========================================================= */
 
 .education-section {
@@ -497,7 +497,7 @@ h1, .brand {
 
 .education-description,
 .empty-state {
-    color: var(--paper);
+    color: var(--ink);
 }
 
 .education-status {
@@ -532,7 +532,7 @@ h1, .brand {
     grid-column: 1 / -1;
     margin: 0;
     padding: 1.25rem;
-    color: var(--paper);
+    color: var(--link);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     text-align: center;
