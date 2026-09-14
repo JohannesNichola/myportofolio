@@ -443,9 +443,12 @@ h1, .brand {
     color: var(--line)
 }
 
-.experience-description,
-.empty-state {
+.experience-description {
     color: var(--paper);
+}
+
+.empty-state {
+    color: var(--ink);
 }
 
 .experience-status {
@@ -495,9 +498,11 @@ h1, .brand {
     color: var(--line)
 }
 
-.education-description,
-.empty-state {
+.education-description {
     color: var(--paper);
+}
+.empty-state {
+    color: var(--ink);
 }
 
 .education-status {
@@ -532,7 +537,7 @@ h1, .brand {
     grid-column: 1 / -1;
     margin: 0;
     padding: 1.25rem;
-    color: var(--paper);
+    color: var(--ink);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     text-align: center;
