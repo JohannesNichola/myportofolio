@@ -4,6 +4,8 @@ from main.models import Experience, Education, Project, Skill
 
 
 def show_main(request):
+    skill_list = Skill.objects.all()
+
     context = {
         "name": "Johannes Nichola Simatupang",
         "npm": "2406495930",
@@ -13,6 +15,7 @@ def show_main(request):
             "and business. Currently working as an IT Support and CRM Specialist at an fnb holding company. "
             "Love to learn new things every day (there is always room for growth)."
         ),
+        "skill_list": skill_list,
     }
     return render(request, "index.html", context)
 
@@ -44,10 +47,3 @@ def show_project(request):
     }
     return render(request, "project.html", context)
 
-def show_skill(request):
-    skill_list = Skill.objects.all()
-    context = {
-        "name": "Johannes Nichola Simatupang",
-        "skill_list": skill_list,
-    }
-    return render(request, "index.html", context)
