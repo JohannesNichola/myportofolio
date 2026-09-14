@@ -13,7 +13,10 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 1. Clone repository.
 2. Masuk ke folder proyek.
 3. Aktifkan virtual environment.
-4. Jalankan: python manage.py runserver
+4. Install dependencies: `pip install -r requirements.txt`
+5. Jalankan migrasi: `python manage.py migrate`
+6. Jalankan: `python manage.py runserver`
+
 
 ## Progres Mingguan
 
