@@ -445,7 +445,7 @@ h1, .brand {
 
 .experience-description,
 .empty-state {
-    color: var(--ink);
+    color: var(--paper);
 }
 
 .experience-status {
@@ -497,7 +497,7 @@ h1, .brand {
 
 .education-description,
 .empty-state {
-    color: var(--ink);
+    color: var(--paper);
 }
 
 .education-status {
@@ -532,7 +532,7 @@ h1, .brand {
     grid-column: 1 / -1;
     margin: 0;
     padding: 1.25rem;
-    color: var(--link);
+    color: var(--paper);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     text-align: center;

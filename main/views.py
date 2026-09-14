@@ -45,10 +45,9 @@ def show_project(request):
     return render(request, "project.html", context)
 
 def show_skill(request):
-    skill_list = Skill.objects.all().order_by('-started_at')
-
+    skill_list = Skill.objects.all()
     context = {
         "name": "Johannes Nichola Simatupang",
         "skill_list": skill_list,
     }
-    return render(request, "skill.html", context)
+    return render(request, "index.html", context)
