@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block meta %}
+    <title>Add Project Image - {{ project.title }}</title>
+{% endblock meta %}
+
+{% block content %}
+    <main>
+        <section class="project-section" id="project">
+            <div class="container">
+
+                <p class="section-kicker">Add Image to Project</p>
+
+                <div class="project-header">
+                    <h1>{{ project.title }}</h1>
+                </div>
+
+                <form method="POST" class="project-form">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="{{ form.image.id_for_label }}">
+                            {{ form.image.label }}
+                        </label>
+
+                        {{ form.image }}
+
+                        {% if form.image.errors %}
+                            <div class="form-error">
+                                {{ form.image.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.order.id_for_label }}">
+                            {{ form.order.label }}
+                        </label>
+
+                        {{ form.order }}
+
+                        {% if form.order.errors %}
+                            <div class="form-error">
+                                {{ form.order.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="project-actions">
+                        <button type="submit" class="button">
+                            Tambah Gambar
+                        </button>
+
+                        <a href="{% url 'main:show_project' %}"
+                           class="button button-secondary">
+                            Selesai
+                        </a>
+                    </div>
+                </form>
+
+                {% if existing_images %}
+                    <div class="image-gallery">
+                        <p class="section-kicker image-gallery-kicker">Existing Images</p>
+
+                        <div class="image-gallery-grid">
+                            {% for image in existing_images %}
+                                <article class="image-gallery-card">
+                                    <div class="image-gallery-thumb">
+                                        <img
+                                            src="{{ image.image }}"
+                                            alt="{{ project.title }} image {{ image.order }}"
+                                        >
+                                    </div>
+
+                                    <p class="image-gallery-caption">
+                                        Image {{ image.order }}
+                                    </p>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <p class="project-status">
+                    {{ remaining_slots }} image slot{{ remaining_slots|pluralize }} remaining.
+                </p>
+
+            </div>
+        </section>
+    </main>
+{% endblock content %}

@@ -45,6 +45,17 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 - Menghapus section Experience, Education, dan Project dari halaman utama karena sudah dipindahkan ke halaman masing-masing.
 - Melakukan testing pada fungsi views untuk Education, Project, Skill.
 
+### Tutorial 3
+
+- Membuat `base.html` sebagai skeleton/template utama dan menerapkan template inheritance pada halaman web.
+- Membuat form `ProjectForm` dan `ProjectImageForm`  menggunakan Django `ModelForm` untuk menambahkan Project.
+- Mengimplementasikan CSRF protection pada form.
+- Mengimplementasikan data delivery menggunakan JSON melalui endpoint API.
+- Menambahkan fitur filter Project berdasarkan title.
+- Mengimplementasikan serialize dan deserialize data Project.
+- Menambahkan fitur delete Project dengan modal konfirmasi.
+- Menambahkan responsive layout pada halaman Project dan form.
+
 ## Pertanyaan Reflektif
 
 ### Tugas 1
