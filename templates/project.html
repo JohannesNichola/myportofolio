@@ -12,7 +12,7 @@
                     <a href="{% url 'main:create_project' %}"
                        class="button project-add-button">
                         <span aria-hidden="true">+</span>
-                        Tambah Proyek
+                        Add Project
                     </a>
                 </div>
 
@@ -22,10 +22,10 @@
                     <input type="search"
                            name="title"
                            value="{{ title_query }}"
-                           placeholder="Cari berdasarkan nama proyek"
+                           placeholder="Search by project name"
                            class="project-search__input"
-                           aria-label="Cari berdasarkan nama proyek">
-                    <button type="submit" class="button">Cari</button>
+                           aria-label="Search by project name">
+                    <button type="submit" class="button">Search</button>
                 </form>
 
                 <div class="project-grid">
@@ -33,11 +33,11 @@
                         <article class="project-card">
                             {% if project.is_ongoing %}
                                 <span class="project-category">
-                                    {{ project.get_category_display }} - (Since {{ project.started_at|date:"F Y" }})
+                                    {{ project.get_category_display }} &middot; (Since {{ project.started_at|date:"F Y" }})
                                 </span>
                                 {% else %}
                                 <span class="project-category">
-                                    {{ project.get_category_display }} - ({{ project.started_at|date:"F Y" }} - {{ project.ended_at|date:"F Y" }})
+                                    {{ project.get_category_display }} &middot; ({{ project.started_at|date:"F Y" }} - {{ project.ended_at|date:"F Y" }})
                                 </span>
                             {% endif %}
 
@@ -64,18 +64,42 @@
                                         {% endfor %}
 
 
-                                        <div class="slides">
-
-                                            {% for image in project.images.all %}
-                                                <div class="slide">
+                                    <div class="slides">
+                                        {% for image in project.images.all %}
+                                            <div class="slide">
+                                                <button
+                                                    type="button"
+                                                    class="slide-image-trigger"
+                                                    popovertarget="img-modal-{{ project.id }}-{{ image.order }}"
+                                                >
                                                     <img
                                                         src="{{ image.image }}"
                                                         alt="{{ project.title }} image {{ image.order }}"
                                                     >
-                                                </div>
-                                            {% endfor %}
+                                                </button>
+                                            </div>
 
-                                        </div>
+                                            <div
+                                                id="img-modal-{{ project.id }}-{{ image.order }}"
+                                                popover
+                                                class="image-modal"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    class="image-modal__backdrop"
+                                                    popovertarget="img-modal-{{ project.id }}-{{ image.order }}"
+                                                    popovertargetaction="hide"
+                                                    aria-label="Tutup"
+                                                ></button>
+
+                                                <img
+                                                    src="{{ image.image }}"
+                                                    alt="{{ project.title }} image {{ image.order }}"
+                                                    class="image-modal__img"
+                                                >
+                                            </div>
+                                        {% endfor %}
+                                    </div>
 
                                         <div class="slider-dots">
 
@@ -93,7 +117,8 @@
 
                             <div class="project-card-actions">
                                 <div class="project-actions">
-                                    <a href="{% url 'main:add_project_image' project.id %}" class="button">Tambah Gambar</a>
+                                    <a href="{% url 'main:edit_project' project.id %}" class="button button-edit">Edit Project</a>
+                                    <a href="{% url 'main:add_project_image' project.id %}" class="button button-edit">Edit Image</a>
                                     {% include "components/project_delete_modal.html" with project=project %}
                                 </div>
                             </div>
@@ -102,7 +127,7 @@
 
                     {% empty %}
                         {% if title_query %}
-                            <p class="empty-state">Tidak ada proyek dengan nama tersebut.</p>
+                            <p class="empty-state">There is no project with that name.</p>
                         {% else %}
                             <p class="empty-state">No project has been added yet.</p>
                         {% endif %}

@@ -528,7 +528,7 @@ h1, .brand {
 
 .project-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
     gap: 1rem;
 }
 
@@ -589,6 +589,7 @@ h1, .brand {
     transition: transform 0.3s ease;
 }
 
+/* Fix aspect ratio 16:9, cropped */
 .slide {
     min-width: 100%;
 }
@@ -596,7 +597,75 @@ h1, .brand {
 .slide img {
     display: block;
     width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.slide-image-trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Full image popup modal */
+.image-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    max-width: none;
+    max-height: none;
+
+    margin: 0;
+    padding: 1.5rem;
+
+    border: 0;
+    background: transparent;
+
+    z-index: 20;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.image-modal:popover-open {
+    display: flex;
+}
+
+.image-modal__backdrop {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+    padding: 0;
+
+    background: rgba(28, 25, 23, 0.75);
+
+    cursor: default;
+}
+
+.image-modal__img {
+    position: relative;
+    z-index: 1;
+
+    max-width: 90vw;
+    max-height: 90vh;
+
+    width: auto;
     height: auto;
+
+    object-fit: contain;
+    border-radius: var(--radius);
 }
 
 /* Slider dots */
@@ -701,7 +770,7 @@ h1, .brand {
     border-radius: var(--radius);
 
     background: #fff;
-    color: var(--ink);
+    color: var(--paper);
 
     font: inherit;
 }
@@ -848,9 +917,42 @@ h1, .brand {
 
 /* Danger button */
 .button-danger {
-    background: #b42318;
+    background: #b42318 !important
 }
 
+.delete-project-title {
+    color: var(--ink) !important
+}
+
+.delete-project-p {
+    color: var(--text-muted) !important
+}
+
+.image-gallery-thumb-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+.image-delete-form {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    z-index: 2;
+}
+
+.image-delete-button {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 50%;
+    background: #b42318;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
 
 /* =========================================================
    PROJECT RESPONSIVE
@@ -959,9 +1061,13 @@ h1, .brand {
 }
 
 .button-secondary {
-    background: var(--ink);
+    background: var(--paper);
+    color: var(--accent)
 }
 
+.button-edit {
+    background: var(--paper) !important
+}
 
 /* =========================================================
    16. DJANGO APPS (PROJECT IMAGE FORM SECTION)

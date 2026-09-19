@@ -89,6 +89,9 @@ class ProjectImage(models.Model):
     image = models.CharField(max_length=255)
     order = models.PositiveIntegerField(default=1)
 
+    class Meta:
+        ordering = ["order"]
+
     def clean(self):
         if self.project_id:
             existing_images = ProjectImage.objects.filter(
@@ -97,13 +100,12 @@ class ProjectImage(models.Model):
 
             if existing_images >= 5:
                 raise ValidationError(
-                    "Satu project maksimal memiliki 5 gambar."
+                    "A single project can have a maximum of 5 images."
                 )
 
     def __str__(self):
         return f"{self.project.title} - Image {self.order}"
-
-
+        
 class Skill(models.Model):
     SKILL_CHOICES = [
         ('soft', 'Soft Skill'),

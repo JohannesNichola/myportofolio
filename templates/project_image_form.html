@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block meta %}
-    <title>Add Project Image - {{ project.title }}</title>
+    <title>Edit Project Image - {{ project.title }}</title>
 {% endblock meta %}
 
 {% block content %}
@@ -48,12 +48,12 @@
 
                     <div class="project-actions">
                         <button type="submit" class="button">
-                            Tambah Gambar
+                            Add Image
                         </button>
 
                         <a href="{% url 'main:show_project' %}"
                            class="button button-secondary">
-                            Selesai
+                            Done
                         </a>
                     </div>
                 </form>
@@ -65,11 +65,24 @@
                         <div class="image-gallery-grid">
                             {% for image in existing_images %}
                                 <article class="image-gallery-card">
-                                    <div class="image-gallery-thumb">
-                                        <img
-                                            src="{{ image.image }}"
-                                            alt="{{ project.title }} image {{ image.order }}"
-                                        >
+                                    <div class="image-gallery-thumb-wrapper">
+                                        <form method="post"
+                                            action="{% url 'main:delete_project_image' project.id image.id %}"
+                                            class="image-delete-form">
+                                            {% csrf_token %}
+                                            <button type="submit"
+                                                    class="image-delete-button"
+                                                    aria-label="Hapus gambar urutan {{ image.order }}">
+                                                ×
+                                            </button>
+                                        </form>
+
+                                        <div class="image-gallery-thumb">
+                                            <img
+                                                src="{{ image.image }}"
+                                                alt="{{ project.title }} image {{ image.order }}"
+                                            >
+                                        </div>
                                     </div>
 
                                     <p class="image-gallery-caption">

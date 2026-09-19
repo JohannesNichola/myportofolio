@@ -3,7 +3,7 @@ from datetime import date
 from django.test import TestCase
 from django.urls import reverse
 
-from main.models import Experience, Education, Project, Skill
+from main.models import Experience, Education, Project, ProjectImage, Skill
 
 class MainTest(TestCase):
     def setUp(self):
@@ -265,3 +265,246 @@ class SkillModelTest(TestCase):
         self.assertEqual(str(skill), "Basic Programming")
         self.assertEqual(skill.category, "technical")
         self.assertEqual(skill.get_category_display(), "Technical Skill")
+
+class ProjectCRUDTest(TestCase):
+    def setUp(self):
+        self.project = Project.objects.create(
+            title="Website Portofolio",
+            description="Website portofolio pribadi menggunakan Django.",
+            category="academic",
+            started_at=date(2026, 1, 1),
+            ended_at=None,
+        )
+
+    def test_create_project_get(self):
+        response = self.client.get(reverse("main:create_project"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "project_form.html")
+        self.assertContains(response, "Add New Project")
+
+    def test_create_project_post_valid(self):
+        response = self.client.post(reverse("main:create_project"), {
+            "title": "Project Baru",
+            "description": "Deskripsi project baru.",
+            "category": "personal",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(Project.objects.filter(title="Project Baru").count(), 1)
+
+        new_project = Project.objects.get(title="Project Baru")
+        self.assertRedirects(
+            response,
+            reverse("main:add_project_image", args=[new_project.id])
+        )
+
+    def test_create_project_post_invalid(self):
+        response = self.client.post(reverse("main:create_project"), {
+            "title": "",
+            "description": "Tidak ada judul.",
+            "category": "personal",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Project.objects.count(), 1)
+
+    def test_edit_project_get(self):
+        response = self.client.get(reverse("main:edit_project", args=[self.project.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "project_form.html")
+        self.assertContains(response, f"Edit {self.project.title}")
+        self.assertContains(response, self.project.title)
+
+    def test_edit_project_post_valid(self):
+        response = self.client.post(
+            reverse("main:edit_project", args=[self.project.id]),
+            {
+                "title": "Website Portofolio Updated",
+                "description": self.project.description,
+                "category": self.project.category,
+                "started_at": self.project.started_at,
+            }
+        )
+
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.title, "Website Portofolio Updated")
+        self.assertRedirects(response, reverse("main:show_project"))
+
+    def test_edit_project_post_invalid(self):
+        response = self.client.post(
+            reverse("main:edit_project", args=[self.project.id]),
+            {
+                "title": "",
+                "description": self.project.description,
+                "category": self.project.category,
+                "started_at": self.project.started_at,
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.title, "Website Portofolio")
+
+    def test_edit_project_not_found(self):
+        response = self.client.get(
+            reverse("main:edit_project", args=["00000000-0000-0000-0000-000000000000"])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_project_post(self):
+        response = self.client.post(reverse("main:delete_project", args=[self.project.id]))
+
+        self.assertRedirects(response, reverse("main:show_project"))
+        self.assertEqual(Project.objects.filter(pk=self.project.id).count(), 0)
+
+    def test_delete_project_get_does_not_delete(self):
+        response = self.client.get(reverse("main:delete_project", args=[self.project.id]))
+
+        self.assertRedirects(response, reverse("main:show_project"))
+        self.assertEqual(Project.objects.filter(pk=self.project.id).count(), 1)
+
+    def test_get_projects_json(self):
+        response = self.client.get(reverse("main:get_projects_json"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertContains(response, self.project.title)
+
+    def test_get_projects_json_with_search(self):
+        Project.objects.create(
+            title="Lain Sama Sekali",
+            description="Deskripsi lain.",
+            category="personal",
+            started_at=date(2026, 1, 1),
+        )
+
+        response = self.client.get(reverse("main:get_projects_json"), {"title": "Portofolio"})
+
+        self.assertContains(response, "Website Portofolio")
+        self.assertNotContains(response, "Lain Sama Sekali")
+
+
+class ProjectImageTest(TestCase):
+    def setUp(self):
+        self.project = Project.objects.create(
+            title="Website Portofolio",
+            description="Website portofolio pribadi menggunakan Django.",
+            category="academic",
+            started_at=date(2026, 1, 1),
+            ended_at=None,
+        )
+
+    def test_project_image_model(self):
+        image = ProjectImage.objects.create(
+            project=self.project,
+            image="https://example.com/image.jpg",
+            order=1,
+        )
+
+        self.assertEqual(str(image), f"{self.project.title} - Image 1")
+
+    def test_add_project_image_get(self):
+        response = self.client.get(
+            reverse("main:add_project_image", args=[self.project.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "project_image_form.html")
+        self.assertContains(response, "5 image slots remaining.")
+
+    def test_add_project_image_post_valid(self):
+        response = self.client.post(
+            reverse("main:add_project_image", args=[self.project.id]),
+            {
+                "image": "https://example.com/image.jpg",
+                "order": 1,
+            }
+        )
+
+        self.assertEqual(self.project.images.count(), 1)
+        self.assertRedirects(
+            response,
+            reverse("main:add_project_image", args=[self.project.id])
+        )
+
+    def test_add_project_image_post_invalid(self):
+        response = self.client.post(
+            reverse("main:add_project_image", args=[self.project.id]),
+            {
+                "image": "",
+                "order": 1,
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.project.images.count(), 0)
+
+    def test_add_project_image_slot_full(self):
+        for i in range(1, 6):
+            ProjectImage.objects.create(
+                project=self.project,
+                image=f"https://example.com/image{i}.jpg",
+                order=i,
+            )
+
+        response = self.client.get(
+            reverse("main:add_project_image", args=[self.project.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "0 image slots remaining.")
+        self.assertEqual(self.project.images.count(), 5)
+
+    def test_delete_project_image(self):
+        image = ProjectImage.objects.create(
+            project=self.project,
+            image="https://example.com/image.jpg",
+            order=1,
+        )
+
+        response = self.client.post(
+            reverse("main:delete_project_image", args=[self.project.id, image.id])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("main:add_project_image", args=[self.project.id])
+        )
+        self.assertEqual(self.project.images.count(), 0)
+
+    def test_delete_project_image_not_found(self):
+        response = self.client.post(
+            reverse(
+                "main:delete_project_image",
+                args=[self.project.id, "00000000-0000-0000-0000-000000000000"]
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_project_image_order_choices_exclude_used(self):
+        ProjectImage.objects.create(
+            project=self.project,
+            image="https://example.com/image1.jpg",
+            order=1,
+        )
+        ProjectImage.objects.create(
+            project=self.project,
+            image="https://example.com/image3.jpg",
+            order=3,
+        )
+
+        response = self.client.get(
+            reverse("main:add_project_image", args=[self.project.id])
+        )
+
+        form = response.context["form"]
+        available = [choice[0] for choice in form.fields["order"].choices]
+
+        self.assertNotIn(1, available)
+        self.assertNotIn(3, available)
+        self.assertIn(2, available)

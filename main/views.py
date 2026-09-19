@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from main.forms import ProjectForm, ProjectImageForm
-from main.models import Experience, Education, Project, Skill
+from main.models import Experience, Education, Project, ProjectImage, Skill
 
 
 def show_main(request):
@@ -70,6 +70,7 @@ def delete_project(request, project_id):
 
     return redirect("main:show_project")
 
+
 def create_project(request):
     form = ProjectForm(request.POST or None)
 
@@ -85,17 +86,33 @@ def create_project(request):
     return render(request, "project_form.html", context)
 
 
+def edit_project(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    form = ProjectForm(request.POST or None, instance=project)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Project berhasil diupdate!")
+        return redirect("main:show_project")
+
+    context = {
+        "name": "Johannes Nichola Simatupang",
+        "form": form,
+        "project": project,
+    }
+    return render(request, "project_form.html", context)
+
+
 def add_project_image(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     existing_images = project.images.count()
 
     if existing_images >= 5:
         messages.warning(request, "Project ini sudah mencapai batas maksimal 5 gambar.")
-        return redirect("main:show_project")
 
-    form = ProjectImageForm(request.POST or None)
+    form = ProjectImageForm(request.POST or None, project=project)
 
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST" and existing_images < 5 and form.is_valid():
         image = form.save(commit=False)
         image.project = project
         image.save()
@@ -106,10 +123,22 @@ def add_project_image(request, project_id):
         "name": "Johannes Nichola Simatupang",
         "project": project,
         "form": form,
-        "existing_images": project.images.all(),
+        "existing_images": project.images.all().order_by("order"),
         "remaining_slots": 5 - existing_images,
     }
     return render(request, "project_image_form.html", context)
+
+
+def delete_project_image(request, project_id, image_id):
+    project = get_object_or_404(Project, pk=project_id)
+    image = get_object_or_404(ProjectImage, pk=image_id, project=project)
+
+    if request.method == "POST":
+        image.delete()
+        messages.success(request, "Gambar berhasil dihapus!")
+
+    return redirect("main:add_project_image", project_id=project.id)
+
 
 def get_projects_json(request):
     title_query = request.GET.get("title", "").strip()
