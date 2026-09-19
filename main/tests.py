@@ -167,6 +167,160 @@ class ExperienceTest(TestCase):
         self.assertContains(response, "No Longer Working")
         self.assertNotContains(response, "Currently Working")
 
+class ExperienceCRUDTest(TestCase):
+    def setUp(self):
+        self.experience = Experience.objects.create(
+            title="Asisten Dosen PBP",
+            company="Universitas Indonesia",
+            description="Membantu mahasiswa memahami pengembangan web.",
+            category="part-time",
+            started_at=date(2026, 1, 1),
+            ended_at=None,
+        )
+
+    def test_create_experience_get(self):
+        response = self.client.get(reverse("main:create_experience"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "experience_form.html")
+        self.assertContains(response, "Add New Experience")
+
+    def test_create_experience_post_valid(self):
+        response = self.client.post(reverse("main:create_experience"), {
+            "title": "Backend Developer Intern",
+            "company": "PT Contoh Sejahtera",
+            "description": "Membangun REST API menggunakan Django.",
+            "category": "internship",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(
+            Experience.objects.filter(title="Backend Developer Intern").count(), 1
+        )
+        self.assertRedirects(response, reverse("main:show_experience"))
+
+    def test_create_experience_post_invalid(self):
+        response = self.client.post(reverse("main:create_experience"), {
+            "title": "",
+            "company": "PT Contoh Sejahtera",
+            "description": "Tidak ada judul.",
+            "category": "internship",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Experience.objects.count(), 1)
+
+    def test_edit_experience_get(self):
+        response = self.client.get(
+            reverse("main:edit_experience", args=[self.experience.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "experience_form.html")
+        self.assertContains(response, f"Edit {self.experience.title}")
+        self.assertContains(response, self.experience.title)
+
+    def test_edit_experience_post_valid(self):
+        response = self.client.post(
+            reverse("main:edit_experience", args=[self.experience.id]),
+            {
+                "title": "Asisten Dosen PBP Updated",
+                "company": self.experience.company,
+                "description": self.experience.description,
+                "category": self.experience.category,
+                "started_at": self.experience.started_at,
+            }
+        )
+
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, "Asisten Dosen PBP Updated")
+        self.assertRedirects(response, reverse("main:show_experience"))
+
+    def test_edit_experience_post_invalid(self):
+        response = self.client.post(
+            reverse("main:edit_experience", args=[self.experience.id]),
+            {
+                "title": "",
+                "company": self.experience.company,
+                "description": self.experience.description,
+                "category": self.experience.category,
+                "started_at": self.experience.started_at,
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, "Asisten Dosen PBP")
+
+    def test_edit_experience_not_found(self):
+        response = self.client.get(
+            reverse("main:edit_experience", args=["00000000-0000-0000-0000-000000000000"])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_experience_post(self):
+        response = self.client.post(
+            reverse("main:delete_experience", args=[self.experience.id])
+        )
+
+        self.assertRedirects(response, reverse("main:show_experience"))
+        self.assertEqual(Experience.objects.filter(pk=self.experience.id).count(), 0)
+
+    def test_delete_experience_get_does_not_delete(self):
+        response = self.client.get(
+            reverse("main:delete_experience", args=[self.experience.id])
+        )
+
+        self.assertRedirects(response, reverse("main:show_experience"))
+        self.assertEqual(Experience.objects.filter(pk=self.experience.id).count(), 1)
+
+    def test_get_experiences_json(self):
+        response = self.client.get(reverse("main:get_experiences_json"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertContains(response, self.experience.title)
+
+    def test_get_experiences_json_with_search(self):
+        Experience.objects.create(
+            title="Lain Sama Sekali",
+            company="PT Lain",
+            description="Deskripsi lain.",
+            category="freelance",
+            started_at=date(2026, 1, 1),
+        )
+
+        response = self.client.get(
+            reverse("main:get_experiences_json"), {"title": "Asisten"}
+        )
+
+        self.assertContains(response, "Asisten Dosen PBP")
+        self.assertNotContains(response, "Lain Sama Sekali")
+
+    def test_search_experience_page(self):
+        Experience.objects.create(
+            title="Frontend Developer",
+            company="PT Lain",
+            description="Membangun UI menggunakan React.",
+            category="freelance",
+            started_at=date(2026, 1, 1),
+        )
+
+        response = self.client.get(
+            reverse("main:show_experience"), {"title": "Asisten"}
+        )
+
+        self.assertContains(response, "Asisten Dosen PBP")
+        self.assertNotContains(response, "Frontend Developer")
+
+    def test_search_experience_no_result(self):
+        response = self.client.get(
+            reverse("main:show_experience"), {"title": "Tidak Ada"}
+        )
+
+        self.assertContains(response, "There is no experience with that title.")
 
 class EducationTest(TestCase):
     def setUp(self):
