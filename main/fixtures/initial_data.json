@@ -1,0 +1,137 @@
+[
+{
+  "model": "main.experience",
+  "pk": "3b3afd94-b7d4-44f7-b7f2-7dae7d629e6b",
+  "fields": {
+    "title": "IT Support",
+    "company": "Tri Agung Nusantara (TAN) Group",
+    "description": "Provided technical support and troubleshooting for hardware, software, network and company systems. Assisted employees with technical issues and maintained IT infrastructure.",
+    "category": "full-time",
+    "thumbnail": null,
+    "started_at": "2025-10-01",
+    "ended_at": "2026-07-01"
+  }
+},
+{
+  "model": "main.experience",
+  "pk": "89480a48-08af-4659-a9a3-3f07fa1a24c7",
+  "fields": {
+    "title": "CRM Specialist",
+    "company": "Tri Agung Nusantara (TAN) Group",
+    "description": "Managed customer relationship processes and CRM activities. Analyzed and prepared customer data to support committee analysis and decision-making, while contributing to initiatives aimed at improving the overall customer experience.",
+    "category": "full-time",
+    "thumbnail": null,
+    "started_at": "2026-07-01",
+    "ended_at": null
+  }
+},
+{
+  "model": "main.education",
+  "pk": "97729348-6e26-455c-9674-7dd2a5e0067e",
+  "fields": {
+    "title": "S1 Sistem Informasi",
+    "institution": "Universitas Indonesia",
+    "description": "Pursuing an education in Information Systems with a focus on technology, business, and information systems development.",
+    "category": "formal-edu",
+    "thumbnail": null,
+    "started_at": "2024-07-01",
+    "ended_at": null
+  }
+},
+{
+  "model": "main.education",
+  "pk": "b3d62293-aa38-474a-a115-c9ecba7075f8",
+  "fields": {
+    "title": "MIPA",
+    "institution": "SMAN 2 Depok",
+    "description": "Completed high school education with a specialization in Mathematics and Natural Sciences.",
+    "category": "formal-edu",
+    "thumbnail": null,
+    "started_at": "2021-07-01",
+    "ended_at": "2024-07-01"
+  }
+},
+{
+  "model": "main.project",
+  "pk": "d548cb16-8872-4501-840b-b1d4095d8317",
+  "fields": {
+    "title": "TanGroup ERP Development Project",
+    "description": "Contributed as a functional consultant in ERP development and implementation, providing business and financial process insights. Collaborated with developers and users across logistics, purchasing, outlet operations, and finance, while supporting system testing and user training.",
+    "category": "professional",
+    "started_at": "2026-07-01",
+    "ended_at": null
+  }
+},
+{
+  "model": "main.projectimage",
+  "pk": "2d986a2a-8342-452d-9118-b5d8205d9de9",
+  "fields": {
+    "project": "d548cb16-8872-4501-840b-b1d4095d8317",
+    "image": "https://drive.google.com/thumbnail?id=1jH9H-I_9-0syv_y70qs-VXJMbYfIbkQF&sz=w1000",
+    "order": 2
+  }
+},
+{
+  "model": "main.projectimage",
+  "pk": "af1a31d5-8b9a-441b-8b04-0916d92d421f",
+  "fields": {
+    "project": "d548cb16-8872-4501-840b-b1d4095d8317",
+    "image": "https://drive.google.com/thumbnail?id=1Pw2yhqjs18jcRh27q-9r4gh3_2DiY5Ry&sz=w1000",
+    "order": 3
+  }
+},
+{
+  "model": "main.projectimage",
+  "pk": "d26ccd39-01c4-4fbe-bf92-15ea0fb0576c",
+  "fields": {
+    "project": "d548cb16-8872-4501-840b-b1d4095d8317",
+    "image": "https://drive.google.com/thumbnail?id=12Y73H3PKbKbrCdBOv8Eg2zo3yWnekfU7&sz=w1000",
+    "order": 1
+  }
+},
+{
+  "model": "main.skill",
+  "pk": "3982d9ac-67a2-4c59-b6ae-b384df0cd698",
+  "fields": {
+    "title": "Basic Programming",
+    "category": "technical",
+    "description": "Computational Thinking, Web Dev. Basic understanding of Python, Java, HTML, CSS, JavaScript, Django Framework, Flutter Framework, Dart, Canva, and Figma."
+  }
+},
+{
+  "model": "main.skill",
+  "pk": "59ce5c74-df4b-4bdb-86dd-2a6c9da22815",
+  "fields": {
+    "title": "Public Speaking",
+    "category": "soft",
+    "description": "Able to communicate ideas clearly and confidently in professional, collaborative, and public settings."
+  }
+},
+{
+  "model": "main.skill",
+  "pk": "73784157-0a52-4000-b16b-103937fee44a",
+  "fields": {
+    "title": "Analytical Thinking",
+    "category": "soft",
+    "description": "Able to analyze problems, identify patterns, evaluate information, and develop logical solutions."
+  }
+},
+{
+  "model": "main.skill",
+  "pk": "d0e8a5d2-6c8d-4dfc-abe3-f8276e69c249",
+  "fields": {
+    "title": "Accounting & Corporate Finance",
+    "category": "technical",
+    "description": "Financial Statement, Chart, Excel. Understanding the accounting process from recording transactions to preparing financial statements, as well as corporate finance concepts including Time Value of Money, Present Value, Future Value, NPV, IRR, ROI, tax and other financial analysis concepts."
+  }
+},
+{
+  "model": "main.skill",
+  "pk": "f7b6d841-a02b-416b-83f5-a57c2061ec3a",
+  "fields": {
+    "title": "ERP Systems",
+    "category": "technical",
+    "description": "Business Flow Chart. Understanding of Enterprise Resource Planning (ERP) systems and their role in integrating business processes, including finance, operations (PO, SO, DO, etc.), inventory, and customer management. Familiar with Odoo and TanGroup ERP (Involved in the production)."
+  }
+}
+]
