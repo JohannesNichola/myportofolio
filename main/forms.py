@@ -1,7 +1,123 @@
 from django import forms
 from django.forms import ModelForm, TextInput, Textarea, Select, DateInput
 
-from main.models import Project, ProjectImage, Experience
+from main.models import Experience, Education, Project, ProjectImage
+
+class ExperienceForm(ModelForm):
+    class Meta:
+        model = Experience
+        fields = [
+            "title",
+            "company",
+            "description",
+            "category",
+            "thumbnail",
+            "started_at",
+            "ended_at",
+        ]
+
+        labels = {
+            "title": "Experience Title",
+            "company": "Company",
+            "description": "Description",
+            "category": "Category",
+            "thumbnail": "Thumbnail URL (optional)",
+            "started_at": "Start Date",
+            "ended_at": "End Date",
+        }
+
+        widgets = {
+            "title": TextInput(
+                attrs={
+                    "placeholder": "Backend Developer Intern",
+                    "maxlength": 255,
+                }
+            ),
+            "company": TextInput(
+                attrs={
+                    "placeholder": "PT Contoh Sejahtera",
+                    "maxlength": 255,
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Tell me about this experience",
+                    "rows": 3,
+                }
+            ),
+            "category": Select(),
+            "thumbnail": TextInput(
+                attrs={"placeholder": "https://drive.google.com/thumbnail?id=...&sz=w1000"}
+            ),
+            "started_at": DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+            "ended_at": DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+        }
+
+class EducationForm(ModelForm):
+    class Meta:
+        model = Education
+        fields = [
+            "title",
+            "institution",
+            "description",
+            "category",
+            "thumbnail",
+            "started_at",
+            "ended_at",
+        ]
+
+        labels = {
+            "title": "Education Title",
+            "institution": "Institution",
+            "description": "Description",
+            "category": "Category",
+            "thumbnail": "Thumbnail URL (optional)",
+            "started_at": "Start Date",
+            "ended_at": "End Date",
+        }
+
+        widgets = {
+            "title": TextInput(
+                attrs={
+                    "placeholder": "S1 Sistem Informasi",
+                    "maxlength": 255,
+                }
+            ),
+            "institution": TextInput(
+                attrs={
+                    "placeholder": "Universitas Indonesia",
+                    "maxlength": 255,
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Tell me about this education",
+                    "rows": 3,
+                }
+            ),
+            "category": Select(),
+            "thumbnail": TextInput(
+                attrs={"placeholder": "https://drive.google.com/thumbnail?id=...&sz=w1000"}
+            ),
+            "started_at": DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+            "ended_at": DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+        }
 
 class ProjectForm(ModelForm):
     class Meta:
@@ -87,62 +203,3 @@ class ProjectImageForm(ModelForm):
     def clean_order(self):
         order = self.cleaned_data.get("order")
         return int(order)
-
-
-class ExperienceForm(ModelForm):
-    class Meta:
-        model = Experience
-        fields = [
-            "title",
-            "company",
-            "description",
-            "category",
-            "thumbnail",
-            "started_at",
-            "ended_at",
-        ]
-
-        labels = {
-            "title": "Experience Title",
-            "company": "Company",
-            "description": "Description",
-            "category": "Category",
-            "thumbnail": "Thumbnail URL (optional)",
-            "started_at": "Start Date",
-            "ended_at": "End Date",
-        }
-
-        widgets = {
-            "title": TextInput(
-                attrs={
-                    "placeholder": "Backend Developer Intern",
-                    "maxlength": 255,
-                }
-            ),
-            "company": TextInput(
-                attrs={
-                    "placeholder": "PT Contoh Sejahtera",
-                    "maxlength": 255,
-                }
-            ),
-            "description": Textarea(
-                attrs={
-                    "placeholder": "Tell me about this experience",
-                    "rows": 3,
-                }
-            ),
-            "category": Select(),
-            "thumbnail": TextInput(
-                attrs={"placeholder": "https://drive.google.com/thumbnail?id=...&sz=w1000"}
-            ),
-            "started_at": DateInput(
-                attrs={
-                    "type": "date",
-                }
-            ),
-            "ended_at": DateInput(
-                attrs={
-                    "type": "date",
-                }
-            ),
-        }

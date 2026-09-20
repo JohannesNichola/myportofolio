@@ -22,9 +22,9 @@
                     <input type="search"
                            name="title"
                            value="{{ title_query }}"
-                           placeholder="Search by project name"
+                           placeholder="Search by project title"
                            class="project-search__input"
-                           aria-label="Search by project name">
+                           aria-label="Search by project title">
                     <button type="submit" class="button">Search</button>
                 </form>
 
@@ -127,7 +127,7 @@
 
                     {% empty %}
                         {% if title_query %}
-                            <p class="empty-state">There is no project with that name.</p>
+                            <p class="empty-state">There is no project with that title.</p>
                         {% else %}
                             <p class="empty-state">No project has been added yet.</p>
                         {% endif %}

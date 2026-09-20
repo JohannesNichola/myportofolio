@@ -371,7 +371,161 @@ class EducationTest(TestCase):
         self.assertContains(response, "No Longer Studying")
         self.assertNotContains(response, "Currently Studying")
 
+class EducationCRUDTest(TestCase):
+    def setUp(self):
+        self.education = Education.objects.create(
+            title="S1 Sistem Informasi",
+            institution="Universitas Indonesia",
+            description="Program studi Sistem Informasi, Fakultas Ilmu Komputer.",
+            category="formal-edu",
+            started_at=date(2024, 8, 1),
+            ended_at=None,
+        )
 
+    def test_create_education_get(self):
+        response = self.client.get(reverse("main:create_education"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "education_form.html")
+        self.assertContains(response, "Add New Education")
+
+    def test_create_education_post_valid(self):
+        response = self.client.post(reverse("main:create_education"), {
+            "title": "S2 Ilmu Komputer",
+            "institution": "Universitas Indonesia",
+            "description": "Program studi Ilmu Komputer.",
+            "category": "formal-edu",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(
+            Education.objects.filter(title="S2 Ilmu Komputer").count(), 1
+        )
+        self.assertRedirects(response, reverse("main:show_education"))
+
+    def test_create_education_post_invalid(self):
+        response = self.client.post(reverse("main:create_education"), {
+            "title": "",
+            "institution": "Universitas Indonesia",
+            "description": "Tidak ada judul.",
+            "category": "formal-edu",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Education.objects.count(), 1)
+
+    def test_edit_education_get(self):
+        response = self.client.get(
+            reverse("main:edit_education", args=[self.education.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "education_form.html")
+        self.assertContains(response, f"Edit {self.education.title}")
+        self.assertContains(response, self.education.title)
+
+    def test_edit_education_post_valid(self):
+        response = self.client.post(
+            reverse("main:edit_education", args=[self.education.id]),
+            {
+                "title": "S1 Sistem Informasi Updated",
+                "institution": self.education.institution,
+                "description": self.education.description,
+                "category": self.education.category,
+                "started_at": self.education.started_at,
+            }
+        )
+
+        self.education.refresh_from_db()
+        self.assertEqual(self.education.title, "S1 Sistem Informasi Updated")
+        self.assertRedirects(response, reverse("main:show_education"))
+
+    def test_edit_education_post_invalid(self):
+        response = self.client.post(
+            reverse("main:edit_education", args=[self.education.id]),
+            {
+                "title": "",
+                "institution": self.education.institution,
+                "description": self.education.description,
+                "category": self.education.category,
+                "started_at": self.education.started_at,
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.education.refresh_from_db()
+        self.assertEqual(self.education.title, "S1 Sistem Informasi")
+
+    def test_edit_education_not_found(self):
+        response = self.client.get(
+            reverse("main:edit_education", args=["00000000-0000-0000-0000-000000000000"])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_education_post(self):
+        response = self.client.post(
+            reverse("main:delete_education", args=[self.education.id])
+        )
+
+        self.assertRedirects(response, reverse("main:show_education"))
+        self.assertEqual(Education.objects.filter(pk=self.education.id).count(), 0)
+
+    def test_delete_education_get_does_not_delete(self):
+        response = self.client.get(
+            reverse("main:delete_education", args=[self.education.id])
+        )
+
+        self.assertRedirects(response, reverse("main:show_education"))
+        self.assertEqual(Education.objects.filter(pk=self.education.id).count(), 1)
+
+    def test_get_educations_json(self):
+        response = self.client.get(reverse("main:get_educations_json"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+        self.assertContains(response, self.education.title)
+
+    def test_get_educations_json_with_search(self):
+        Education.objects.create(
+            title="Lain Sama Sekali",
+            institution="Institusi Lain",
+            description="Deskripsi lain.",
+            category="certification",
+            started_at=date(2026, 1, 1),
+        )
+
+        response = self.client.get(
+            reverse("main:get_educations_json"), {"title": "Sistem"}
+        )
+
+        self.assertContains(response, "S1 Sistem Informasi")
+        self.assertNotContains(response, "Lain Sama Sekali")
+
+    def test_search_education_page(self):
+        Education.objects.create(
+            title="Sertifikasi AWS",
+            institution="Institusi Lain",
+            description="Sertifikasi cloud computing.",
+            category="certification",
+            started_at=date(2026, 1, 1),
+        )
+
+        response = self.client.get(
+            reverse("main:show_education"), {"title": "Sistem"}
+        )
+
+        self.assertContains(response, "S1 Sistem Informasi")
+        self.assertNotContains(response, "Sertifikasi AWS")
+
+    def test_search_education_no_result(self):
+        response = self.client.get(
+            reverse("main:show_education"), {"title": "Tidak Ada"}
+        )
+
+        self.assertContains(response, "There is no education with that title.")
+        
 class ProjectTest(TestCase):
     def setUp(self):
         self.project = Project.objects.create(

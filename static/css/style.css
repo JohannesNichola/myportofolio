@@ -804,7 +804,8 @@ h1, .brand {
     margin-top: auto;
 }
 
-.project-actions .experience-status {
+.project-actions .experience-status,
+.project-actions .education-status {
     margin-top: 0;
 }
 
