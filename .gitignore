@@ -8,6 +8,9 @@ db.sqlite3
 __pycache__/
 *.pyc
 
+# Static files (generated, run collectstatic to regenerate)
+staticfiles/
+
 # OS & IDE Files
 .DS_Store
 .vscode/*
