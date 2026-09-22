@@ -9,11 +9,13 @@
                 <p class="section-kicker">My Project So Far</p>
                 <div class="project-header">
                     <h1>Project</h1>
-                    <a href="{% url 'main:create_project' %}"
-                       class="button project-add-button">
-                        <span aria-hidden="true">+</span>
-                        Add Project
-                    </a>
+                    {% if user.is_superuser %}
+                        <a href="{% url 'main:create_project' %}"
+                        class="button project-add-button">
+                            <span aria-hidden="true">+</span>
+                            Add Project
+                        </a>
+                    {% endif %}
                 </div>
 
                 <form method="get"
@@ -117,9 +119,14 @@
 
                             <div class="project-card-actions">
                                 <div class="project-actions">
-                                    <a href="{% url 'main:edit_project' project.id %}" class="button button-edit">Edit Project</a>
-                                    <a href="{% url 'main:add_project_image' project.id %}" class="button button-edit">Edit Image</a>
-                                    {% include "components/project_delete_modal.html" with project=project %}
+                                    {% if user.is_superuser %}
+                                        <a href="{% url 'main:edit_project' project.id %}" class="button button-edit">Edit Project</a>
+                                        <a href="{% url 'main:add_project_image' project.id %}" class="button button-edit">Edit Image</a>
+                                    {% endif %}
+                                    {% include "components/project_star.html" with project=project %}
+                                    {% if user.is_superuser %}
+                                        {% include "components/project_delete_modal.html" with project=project %}
+                                    {% endif %}
                                 </div>
                             </div>
 

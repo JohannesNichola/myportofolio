@@ -70,6 +70,20 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 - Menyesuaikan tampilan grid Project agar lebih rapi dan tidak terlalu memanjang ke bawah pada layar laptop.
 - Menambahkan unit test untuk seluruh fungsi CRUD dan endpoint JSON pada Experience, Education, dan Project.
 
+### Tutorial 4
+
+- Mengimplementasikan sistem autentikasi menggunakan model `User` bawaan Django, dengan `UserCreationForm` untuk registrasi dan `AuthenticationForm` untuk login.
+- Membuat halaman Register dan Login (`register.html`, `login.html`) yang mewarisi `base.html`.
+- Menambahkan fungsi logout yang menghapus session pengguna.
+- Menampilkan status login pengguna (username dan tombol Logout, atau tombol Login dan Register) pada navbar di `base.html`.
+- Mengimplementasikan cookie kustom `last_login` yang dibuat saat pengguna login dan dihapus saat logout, menggunakan `set_cookie()` dan `delete_cookie()`.
+- Menampilkan informasi sesi terakhir login pada halaman utama (`index.html`) dengan membaca `request.COOKIES`.
+- Mengimplementasikan otorisasi menggunakan `@login_required` dan pengecekan `is_superuser` pada fungsi Create dan Delete Project, sehingga hanya pemilik portofolio yang dapat menambah dan menghapus proyek.
+- Menyembunyikan tombol Add Project, Edit Project, Edit Image, dan Delete Project pada template untuk pengguna yang bukan pemilik portofolio.
+- Menambahkan field `starred_by` (ManyToManyField ke model `User`) pada model Project untuk menyimpan data star.
+- Menambahkan fitur star/unstar pada Project yang dapat digunakan oleh seluruh pengguna yang sudah login (tidak terbatas pada pemilik portofolio).
+- Menyesuaikan endpoint JSON Project (`get_projects_json`) menggunakan `use_natural_foreign_keys=True` agar data `starred_by` ditampilkan dalam bentuk username, bukan id pengguna.
+
 ## Pertanyaan Reflektif
 
 ### Tugas 1
