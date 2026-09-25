@@ -1,5 +1,7 @@
 from datetime import date
+from urllib.parse import quote
 
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
 
@@ -584,6 +586,19 @@ class ProjectCRUDTest(TestCase):
             ended_at=None,
         )
 
+        self.superuser = User.objects.create_superuser(
+            username="owner", password="ownerpass123"
+        )
+        self.regular_user = User.objects.create_user(
+            username="visitor", password="visitorpass123"
+        )
+        self.editor_user = User.objects.create_user(
+            username="editor", password="editorpass123"
+        )
+        self.editor_user.groups.add(Group.objects.create(name="Editor"))
+
+        self.client.login(username="owner", password="ownerpass123")
+
     def test_create_project_get(self):
         response = self.client.get(reverse("main:create_project"))
 
@@ -695,6 +710,116 @@ class ProjectCRUDTest(TestCase):
         self.assertContains(response, "Website Portofolio")
         self.assertNotContains(response, "Lain Sama Sekali")
 
+    def test_get_projects_json_does_not_leak_starred_by(self):
+        self.client.logout()
+        self.project.starred_by.add(self.regular_user)
+
+        response = self.client.get(reverse("main:get_projects_json"))
+
+        self.assertNotContains(response, "starred_by")
+        self.assertNotContains(response, self.regular_user.username)
+
+    def test_create_project_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:create_project")
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_create_project_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.get(reverse("main:create_project"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_project_forbidden_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(reverse("main:create_project"), {
+            "title": "Project oleh Editor",
+            "description": "Editor tidak boleh membuat project baru.",
+            "category": "personal",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Project.objects.filter(title="Project oleh Editor").count(), 0)
+
+    def test_edit_project_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:edit_project", args=[self.project.id])
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_edit_project_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.get(reverse("main:edit_project", args=[self.project.id]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_project_allowed_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(
+            reverse("main:edit_project", args=[self.project.id]),
+            {
+                "title": "Diedit oleh Editor",
+                "description": self.project.description,
+                "category": self.project.category,
+                "started_at": self.project.started_at,
+            }
+        )
+
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.title, "Diedit oleh Editor")
+        self.assertRedirects(response, reverse("main:show_project"))
+
+    def test_delete_project_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:delete_project", args=[self.project.id])
+
+        response = self.client.post(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_delete_project_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.post(reverse("main:delete_project", args=[self.project.id]))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Project.objects.filter(pk=self.project.id).count(), 1)
+
+    def test_delete_project_forbidden_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(reverse("main:delete_project", args=[self.project.id]))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Project.objects.filter(pk=self.project.id).count(), 1)
+
+    def test_anonymous_and_regular_user_can_still_read_project_page(self):
+        self.client.logout()
+
+        response = self.client.get(reverse("main:show_project"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.project.title)
+
+        self.client.login(username="visitor", password="visitorpass123")
+        response = self.client.get(reverse("main:show_project"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.project.title)
 
 class ProjectImageTest(TestCase):
     def setUp(self):
@@ -705,6 +830,19 @@ class ProjectImageTest(TestCase):
             started_at=date(2026, 1, 1),
             ended_at=None,
         )
+
+        self.superuser = User.objects.create_superuser(
+            username="owner", password="ownerpass123"
+        )
+        self.regular_user = User.objects.create_user(
+            username="visitor", password="visitorpass123"
+        )
+        self.editor_user = User.objects.create_user(
+            username="editor", password="editorpass123"
+        )
+        self.editor_user.groups.add(Group.objects.create(name="Editor"))
+
+        self.client.login(username="owner", password="ownerpass123")
 
     def test_project_image_model(self):
         image = ProjectImage.objects.create(
@@ -816,3 +954,53 @@ class ProjectImageTest(TestCase):
         self.assertNotIn(1, available)
         self.assertNotIn(3, available)
         self.assertIn(2, available)
+
+
+    def test_add_project_image_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:add_project_image", args=[self.project.id])
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_add_project_image_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.get(
+            reverse("main:add_project_image", args=[self.project.id])
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_add_project_image_allowed_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(
+            reverse("main:add_project_image", args=[self.project.id]),
+            {"image": "https://example.com/image.jpg", "order": 1},
+        )
+
+        self.assertEqual(self.project.images.count(), 1)
+        self.assertRedirects(
+            response,
+            reverse("main:add_project_image", args=[self.project.id])
+        )
+
+    def test_delete_project_image_forbidden_for_regular_user(self):
+        image = ProjectImage.objects.create(
+            project=self.project,
+            image="https://example.com/image.jpg",
+            order=1,
+        )
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.post(
+            reverse("main:delete_project_image", args=[self.project.id, image.id])
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.project.images.count(), 1)

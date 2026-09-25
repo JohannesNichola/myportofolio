@@ -119,7 +119,7 @@
 
                             <div class="project-card-actions">
                                 <div class="project-actions">
-                                    {% if user.is_superuser %}
+                                    {% if user.is_superuser or is_editor %}
                                         <a href="{% url 'main:edit_project' project.id %}" class="button button-edit">Edit Project</a>
                                         <a href="{% url 'main:add_project_image' project.id %}" class="button button-edit">Edit Image</a>
                                     {% endif %}

@@ -13,6 +13,13 @@ from main.forms import ExperienceForm, EducationForm, ProjectForm, ProjectImageF
 from main.models import Experience, Education, Project, ProjectImage, Skill
 
 
+def is_editor(user):
+    return user.is_authenticated and user.groups.filter(name="Editor").exists()
+
+
+def can_edit_portfolio_item(user):
+    return user.is_superuser or is_editor(user)
+
 def register(request):
     form = UserCreationForm(request.POST or None)
 
@@ -227,6 +234,7 @@ def show_project(request):
         "name": "Johannes Nichola Simatupang",
         "project_list": projects,
         "title_query": title_query,
+        "is_editor": is_editor(request.user),
     }
     return render(request, "project.html", context)
 
@@ -264,8 +272,11 @@ def create_project(request):
     }
     return render(request, "project_form.html", context)
 
-
+@login_required(login_url="/login/")
 def edit_project(request, project_id):
+    if not can_edit_portfolio_item(request.user):
+        raise PermissionDenied
+
     project = get_object_or_404(Project, pk=project_id)
     form = ProjectForm(request.POST or None, instance=project)
 
@@ -282,7 +293,11 @@ def edit_project(request, project_id):
     return render(request, "project_form.html", context)
 
 
+@login_required(login_url="/login/")
 def add_project_image(request, project_id):
+    if not can_edit_portfolio_item(request.user):
+        raise PermissionDenied
+
     project = get_object_or_404(Project, pk=project_id)
     existing_images = project.images.count()
 
@@ -308,7 +323,11 @@ def add_project_image(request, project_id):
     return render(request, "project_image_form.html", context)
 
 
+@login_required(login_url="/login/")
 def delete_project_image(request, project_id, image_id):
+    if not can_edit_portfolio_item(request.user):
+        raise PermissionDenied
+
     project = get_object_or_404(Project, pk=project_id)
     image = get_object_or_404(ProjectImage, pk=image_id, project=project)
 
@@ -327,7 +346,10 @@ def get_projects_json(request):
         projects = projects.filter(title__icontains=title_query)
 
     projects_json = serializers.serialize(
-        "json", projects, use_natural_foreign_keys=True
+        "json",
+        projects,
+        use_natural_foreign_keys=True,
+        fields=("title", "description", "category", "started_at", "ended_at"),
     )
     return HttpResponse(projects_json, content_type="application/json")
 
