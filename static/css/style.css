@@ -1151,6 +1151,14 @@ h1, .brand {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+    background: var(--accent);
+    color: var(--paper)
+}
+
+.button-star-project {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     background: var(--ink);
     color: var(--paper)
 }
@@ -1165,4 +1173,26 @@ h1, .brand {
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.25);
     font-size: 0.8rem;
+}
+
+
+/* =========================================================
+   18. DJANGO APPS (LOGIN / REGISTER)
+   ========================================================= */
+
+.log-reg {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+.log-reg:visited {
+    color: var(--accent);
+}
+
+.log-reg:hover {
+    color: var(--accent-dark);
+}
+
+.log-reg:active {
+    color: var(--accent-dark);
 }

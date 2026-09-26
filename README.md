@@ -17,7 +17,8 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 5. Jalankan migrasi: `python manage.py migrate`
 6. Load data awal (agar konten saya langsung tampil): `python manage.py loaddata initial_data`
 7. Jalankan: `python manage.py runserver`
-
+8. (Opsional, untuk mencoba fitur Create/Edit/Delete sebagai pemilik) Buat akun admin: `python manage.py createsuperuser`
+9. (Opsional, untuk mencoba peran Editor) Login ke `/admin/` dengan akun superuser, buat Group baru bernama `Editor`, lalu tambahkan akun user yang ingin diuji ke dalam Group tersebut melalui halaman edit user di admin.
 
 ## Progres Mingguan
 
@@ -84,6 +85,17 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 - Menambahkan fitur star/unstar pada Project yang dapat digunakan oleh seluruh pengguna yang sudah login (tidak terbatas pada pemilik portofolio).
 - Menyesuaikan endpoint JSON Project (`get_projects_json`) menggunakan `use_natural_foreign_keys=True` agar data `starred_by` ditampilkan dalam bentuk username, bukan id pengguna.
 
+### Tugas 4
+
+- Menambahkan Django Group `Editor` sebagai peran baru: memiliki hak edit data seperti pemilik portofolio, tetapi tidak dapat membuat atau menghapus data.
+- Membuat fungsi helper `is_editor()` dan `can_edit_portfolio_item()` pada `views.py` agar logika pengecekan role Editor dapat dipakai ulang di fungsi Project, Experience, maupun Education tanpa menulis ulang logika yang sama tiga kali.
+- Menambahkan pengecekan otorisasi sisi server (`@login_required` + pengecekan role) pada `edit_project`, `add_project_image`, dan `delete_project_image`.
+- Menambahkan pengecekan otorisasi sisi server yang sama pada seluruh fungsi CRUD milik Experience dan Education.
+- Menyembunyikan tombol Add (khusus superuser), Edit (superuser atau Editor), dan Delete (khusus superuser) pada `project.html`, `experience.html`, dan `education.html` sesuai peran pengguna yang sedang login.
+- Menambahkan field `starred_by` pada model Experience dan Education.
+- Memperbaiki `get_projects_json`, `get_experiences_json`, dan `get_educations_json` agar hanya mengembalikan field yang aman (title, description, category, dan sejenisnya) dan tidak lagi menyertakan `starred_by`.
+- Menambahkan dan memperbaiki unit test.
+
 ## Pertanyaan Reflektif
 
 ### Tugas 1
@@ -123,3 +135,7 @@ Dalam pengerjaan tugas ini, saya menggunakan GenAI Claude sebagai alat bantu unt
 ### Tugas 3
 
 Dalam pengerjaan tugas ini, saya menggunakan GenAI Claude sebagai alat bantu untuk  membantu proses refactoring HTML agar seluruh halaman menerapkan template inheritance dari `base.html`, serta untuk membantu saya dalam membuat `ExperienceForm`, `EducationForm`, beserta fungsi view CRUD untuk Experience dan Education dengan pola yang konsisten dengan implementasi Project yang sudah ada sebelumnya. Selain itu, saya juga meminta bantuan AI pada saat memeriksa kesamaan desain antar halaman, seperti memastikan struktur CSS class, posisi tombol, dan tata letak antar section (Experience, Education, Project) konsisten satu sama lain, mengingat beberapa bug yang saya temui justru berasal dari class CSS yang tidak konsisten digunakan antar halaman (misalnya perbedaan margin akibat class yang sama dipakai ulang untuk section yang berbeda). Saya juga menggunakan AI untuk membantu saya melengkapi unit test agar coverage testing pada seluruh fungsi CRUD dan endpoint JSON agar seluruh fungsi tercover. Selain itu, GenAI membantu saya dalam membuat initial data saya. Meskipun begitu, saya tetap melakukan verifikasi terhadap seluruh kode dan test case yang dihasilkan AI dengan menjalankan `python manage.py test` serta mencoba secara manual melalui `runserver`, dan melakukan penyesuaian pada bagian yang tidak sesuai dengan struktur model, view, maupun template yang telah saya buat sebelumnya, agar seluruh fitur berjalan dengan benar dan konsisten sesuai kebutuhan tugas.
+
+### Tugas 4
+
+Dalam pengerjaan tugas ini, saya menggunakan GenAI Claude untuk membantu merancang penerapan peran Editor secara konsisten pada Project, Experience, dan Education, termasuk membuat fungsi helper `is_editor()` dan `can_edit_portfolio_item()` agar logika pengecekan hak akses tidak perlu ditulis berulang di setiap fungsi. Claude juga membantu saya menemukan bagian fungsi CRUD yang ternyata belum memiliki proteksi di sisi server (hanya disembunyikan di template), serta membantu memperbaiki endpoint JSON agar tidak membocorkan data `starred_by` ke publik tanpa login. Selain itu, saya meminta bantuan AI untuk melengkapi unit test agar seluruh skenario peran (pengunjung, pengguna biasa, Editor, dan superuser) tercakup pada ketiga bagian tersebut. Meskipun begitu, saya tetap menjalankan `python manage.py test` dan mencoba secara manual melalui `runserver` di setiap tahap, membuat Group `Editor` secara langsung lewat `/admin/`, serta membaca ulang setiap kode yang diberikan AI untuk memastikan saya memahami alurnya sebelum di-commit, sesuai kebutuhan tugas.
