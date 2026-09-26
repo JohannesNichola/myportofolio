@@ -9,11 +9,13 @@
                 <p class="section-kicker">My Experience So Far</p>
                 <div class="project-header">
                     <h1>Experience</h1>
-                    <a href="{% url 'main:create_experience' %}"
-                       class="button project-add-button">
-                        <span aria-hidden="true">+</span>
-                        Add Experience
-                    </a>
+                    {% if user.is_superuser %}
+                        <a href="{% url 'main:create_experience' %}"
+                           class="button project-add-button">
+                            <span aria-hidden="true">+</span>
+                            Add Experience
+                        </a>
+                    {% endif %}
                 </div>
 
                 <form method="get"
@@ -48,8 +50,13 @@
 
                             <div class="project-card-actions">
                                 <div class="project-actions">
-                                    <a href="{% url 'main:edit_experience' experience.id %}" class="button button-edit">Edit</a>
-                                    {% include "components/experience_delete_modal.html" with experience=experience %}
+                                    {% if user.is_superuser or is_editor %}
+                                        <a href="{% url 'main:edit_experience' experience.id %}" class="button button-edit">Edit</a>
+                                    {% endif %}
+                                    {% include "components/experience_star.html" with experience=experience %}
+                                    {% if user.is_superuser %}
+                                        {% include "components/experience_delete_modal.html" with experience=experience %}
+                                    {% endif %}
                                 </div>
                             </div>
                         </article>

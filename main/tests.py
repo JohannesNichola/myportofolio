@@ -180,6 +180,19 @@ class ExperienceCRUDTest(TestCase):
             ended_at=None,
         )
 
+        self.superuser = User.objects.create_superuser(
+            username="owner", password="ownerpass123"
+        )
+        self.regular_user = User.objects.create_user(
+            username="visitor", password="visitorpass123"
+        )
+        self.editor_user = User.objects.create_user(
+            username="editor", password="editorpass123"
+        )
+        self.editor_user.groups.add(Group.objects.create(name="Editor"))
+
+        self.client.login(username="owner", password="ownerpass123")
+
     def test_create_experience_get(self):
         response = self.client.get(reverse("main:create_experience"))
 
@@ -285,6 +298,34 @@ class ExperienceCRUDTest(TestCase):
         self.assertEqual(response["Content-Type"], "application/json")
         self.assertContains(response, self.experience.title)
 
+    def test_get_experiences_json_does_not_leak_starred_by(self):
+        self.client.logout()
+        self.experience.starred_by.add(self.regular_user)
+
+        response = self.client.get(reverse("main:get_experiences_json"))
+
+        self.assertNotContains(response, "starred_by")
+        self.assertNotContains(response, self.regular_user.username)
+
+    def test_toggle_star_experience_requires_login(self):
+        self.client.logout()
+        url = reverse("main:toggle_star_experience", args=[self.experience.id])
+
+        response = self.client.post(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_toggle_star_experience_adds_and_removes_star(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+        url = reverse("main:toggle_star_experience", args=[self.experience.id])
+
+        self.client.post(url)
+        self.assertIn(self.regular_user, self.experience.starred_by.all())
+
+        self.client.post(url)
+        self.assertNotIn(self.regular_user, self.experience.starred_by.all())
+        
     def test_get_experiences_json_with_search(self):
         Experience.objects.create(
             title="Lain Sama Sekali",
@@ -323,6 +364,111 @@ class ExperienceCRUDTest(TestCase):
         )
 
         self.assertContains(response, "There is no experience with that title.")
+
+    def test_create_experience_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:create_experience")
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_create_experience_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.get(reverse("main:create_experience"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_experience_forbidden_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(reverse("main:create_experience"), {
+            "title": "Experience oleh Editor",
+            "company": "PT Editor",
+            "description": "Editor tidak boleh membuat experience baru.",
+            "category": "freelance",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Experience.objects.filter(title="Experience oleh Editor").count(), 0)
+
+    def test_edit_experience_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:edit_experience", args=[self.experience.id])
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_edit_experience_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.get(reverse("main:edit_experience", args=[self.experience.id]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_experience_allowed_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(
+            reverse("main:edit_experience", args=[self.experience.id]),
+            {
+                "title": "Diedit oleh Editor",
+                "company": self.experience.company,
+                "description": self.experience.description,
+                "category": self.experience.category,
+                "started_at": self.experience.started_at,
+            }
+        )
+
+        self.experience.refresh_from_db()
+        self.assertEqual(self.experience.title, "Diedit oleh Editor")
+        self.assertRedirects(response, reverse("main:show_experience"))
+
+    def test_delete_experience_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:delete_experience", args=[self.experience.id])
+
+        response = self.client.post(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_delete_experience_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.post(reverse("main:delete_experience", args=[self.experience.id]))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Experience.objects.filter(pk=self.experience.id).count(), 1)
+
+    def test_delete_experience_forbidden_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(reverse("main:delete_experience", args=[self.experience.id]))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Experience.objects.filter(pk=self.experience.id).count(), 1)
+
+    def test_anonymous_and_regular_user_can_still_read_experience_page(self):
+        self.client.logout()
+
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.experience.title)
+
+        self.client.login(username="visitor", password="visitorpass123")
+        response = self.client.get(reverse("main:show_experience"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.experience.title)
+
 
 class EducationTest(TestCase):
     def setUp(self):
