@@ -530,6 +530,19 @@ class EducationCRUDTest(TestCase):
             ended_at=None,
         )
 
+        self.superuser = User.objects.create_superuser(
+            username="owner", password="ownerpass123"
+        )
+        self.regular_user = User.objects.create_user(
+            username="visitor", password="visitorpass123"
+        )
+        self.editor_user = User.objects.create_user(
+            username="editor", password="editorpass123"
+        )
+        self.editor_user.groups.add(Group.objects.create(name="Editor"))
+
+        self.client.login(username="owner", password="ownerpass123")
+
     def test_create_education_get(self):
         response = self.client.get(reverse("main:create_education"))
 
@@ -635,6 +648,33 @@ class EducationCRUDTest(TestCase):
         self.assertEqual(response["Content-Type"], "application/json")
         self.assertContains(response, self.education.title)
 
+    def test_get_educations_json_does_not_leak_starred_by(self):
+        self.education.starred_by.add(self.regular_user)
+
+        response = self.client.get(reverse("main:get_educations_json"))
+
+        self.assertNotContains(response, "starred_by")
+        self.assertNotContains(response, self.regular_user.username)
+
+    def test_toggle_star_education_requires_login(self):
+        self.client.logout()
+        url = reverse("main:toggle_star_education", args=[self.education.id])
+
+        response = self.client.post(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_toggle_star_education_adds_and_removes_star(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+        url = reverse("main:toggle_star_education", args=[self.education.id])
+
+        self.client.post(url)
+        self.assertIn(self.regular_user, self.education.starred_by.all())
+
+        self.client.post(url)
+        self.assertNotIn(self.regular_user, self.education.starred_by.all())
+
     def test_get_educations_json_with_search(self):
         Education.objects.create(
             title="Lain Sama Sekali",
@@ -673,7 +713,113 @@ class EducationCRUDTest(TestCase):
         )
 
         self.assertContains(response, "There is no education with that title.")
-        
+
+
+    def test_create_education_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:create_education")
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_create_education_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.get(reverse("main:create_education"))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_education_forbidden_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(reverse("main:create_education"), {
+            "title": "Education oleh Editor",
+            "institution": "Institusi Editor",
+            "description": "Editor tidak boleh membuat education baru.",
+            "category": "formal-edu",
+            "started_at": "2026-01-01",
+        })
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Education.objects.filter(title="Education oleh Editor").count(), 0)
+
+    def test_edit_education_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:edit_education", args=[self.education.id])
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_edit_education_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.get(reverse("main:edit_education", args=[self.education.id]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_education_allowed_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(
+            reverse("main:edit_education", args=[self.education.id]),
+            {
+                "title": "Diedit oleh Editor",
+                "institution": self.education.institution,
+                "description": self.education.description,
+                "category": self.education.category,
+                "started_at": self.education.started_at,
+            }
+        )
+
+        self.education.refresh_from_db()
+        self.assertEqual(self.education.title, "Diedit oleh Editor")
+        self.assertRedirects(response, reverse("main:show_education"))
+
+    def test_delete_education_redirects_anonymous_to_login(self):
+        self.client.logout()
+        url = reverse("main:delete_education", args=[self.education.id])
+
+        response = self.client.post(url)
+
+        self.assertRedirects(response, f"/login/?next={quote(url)}")
+
+    def test_delete_education_forbidden_for_regular_user(self):
+        self.client.logout()
+        self.client.login(username="visitor", password="visitorpass123")
+
+        response = self.client.post(reverse("main:delete_education", args=[self.education.id]))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Education.objects.filter(pk=self.education.id).count(), 1)
+
+    def test_delete_education_forbidden_for_editor(self):
+        self.client.logout()
+        self.client.login(username="editor", password="editorpass123")
+
+        response = self.client.post(reverse("main:delete_education", args=[self.education.id]))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Education.objects.filter(pk=self.education.id).count(), 1)
+
+    def test_anonymous_and_regular_user_can_still_read_education_page(self):
+        self.client.logout()
+
+        response = self.client.get(reverse("main:show_education"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.education.title)
+
+        self.client.login(username="visitor", password="visitorpass123")
+        response = self.client.get(reverse("main:show_education"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.education.title)
+
+            
 class ProjectTest(TestCase):
     def setUp(self):
         self.project = Project.objects.create(

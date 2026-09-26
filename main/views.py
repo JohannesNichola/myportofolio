@@ -191,11 +191,16 @@ def show_education(request):
         "name": "Johannes Nichola Simatupang",
         "education_list": educations,
         "title_query": title_query,
+        "is_editor": is_editor(request.user),
     }
     return render(request, "education.html", context)
 
 
+@login_required(login_url="/login/")
 def create_education(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = EducationForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -210,7 +215,11 @@ def create_education(request):
     return render(request, "education_form.html", context)
 
 
+@login_required(login_url="/login/")
 def edit_education(request, education_id):
+    if not can_edit_portfolio_item(request.user):
+        raise PermissionDenied
+
     education = get_object_or_404(Education, pk=education_id)
     form = EducationForm(request.POST or None, instance=education)
 
@@ -227,7 +236,11 @@ def edit_education(request, education_id):
     return render(request, "education_form.html", context)
 
 
+@login_required(login_url="/login/")
 def delete_education(request, education_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     education = get_object_or_404(Education, pk=education_id)
 
     if request.method == "POST":
@@ -245,8 +258,24 @@ def get_educations_json(request):
     if title_query:
         educations = educations.filter(title__icontains=title_query)
 
-    educations_json = serializers.serialize("json", educations)
+    educations_json = serializers.serialize(
+        "json",
+        educations,
+        fields=("title", "institution", "description", "category", "thumbnail", "started_at", "ended_at"),
+    )
     return HttpResponse(educations_json, content_type="application/json")
+
+@login_required(login_url="/login/")
+def toggle_star_education(request, education_id):
+    education = get_object_or_404(Education, pk=education_id)
+
+    if request.method == "POST":
+        if request.user in education.starred_by.all():
+            education.starred_by.remove(request.user)
+        else:
+            education.starred_by.add(request.user)
+
+    return redirect("main:show_education")
 
 def show_project(request):
     json_response = get_projects_json(request)
