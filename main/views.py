@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
 
 from main.forms import ExperienceForm, EducationForm, ProjectForm, ProjectImageForm
@@ -278,20 +279,13 @@ def toggle_star_education(request, education_id):
     return redirect("main:show_education")
 
 def show_project(request):
-    json_response = get_projects_json(request)
-
-    projects = serializers.deserialize(
-        "json",
-        json_response.content.decode("utf-8"),
-    )
-    projects = [project.object for project in projects]
     title_query = request.GET.get("title", "").strip()
 
     context = {
         "name": "Johannes Nichola Simatupang",
-        "project_list": projects,
         "title_query": title_query,
         "is_editor": is_editor(request.user),
+        "form": ProjectForm(),
     }
     return render(request, "project.html", context)
 
@@ -397,18 +391,53 @@ def delete_project_image(request, project_id, image_id):
 
 def get_projects_json(request):
     title_query = request.GET.get("title", "").strip()
-    projects = Project.objects.all()
+    projects = Project.objects.prefetch_related("starred_by", "images").all()
 
     if title_query:
         projects = projects.filter(title__icontains=title_query)
 
-    projects_json = serializers.serialize(
-        "json",
-        projects,
-        use_natural_foreign_keys=True,
-        fields=("title", "description", "category", "started_at", "ended_at"),
-    )
-    return HttpResponse(projects_json, content_type="application/json")
+    data = []
+    for project in projects:
+        starred_users = project.starred_by.all()
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+
+        data.append({
+            "pk": str(project.id),
+            "fields": {
+                "title": project.title,
+                "description": project.description,
+                "category_display": project.get_category_display(),
+                "is_ongoing": project.is_ongoing,
+                "started_at": project.started_at.strftime("%B %Y"),
+                "ended_at": project.ended_at.strftime("%B %Y") if project.ended_at else None,
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "images": [
+                    {"url": image.image, "order": image.order}
+                    for image in project.images.all()
+                ],
+            }
+        })
+
+    return JsonResponse(data, safe=False)
+
+@require_POST
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Only the portfolio owner can add a project."},
+            status=403,
+        )
+
+    form = ProjectForm(request.POST)
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            {"message": "Project added successfully.", "pk": str(project.id)},
+            status=201,
+        )
+
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 @login_required(login_url="/login/")
 def toggle_star(request, project_id):

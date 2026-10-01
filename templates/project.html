@@ -10,18 +10,18 @@
                 <div class="project-header">
                     <h1>Project</h1>
                     {% if user.is_superuser %}
-                        <a href="{% url 'main:create_project' %}"
-                        class="button project-add-button">
+                        <button type="button"
+                                class="button project-add-button"
+                                popovertarget="add-project-modal">
                             <span aria-hidden="true">+</span>
                             Add Project
-                        </a>
+                        </button>
                     {% endif %}
                 </div>
 
-                <form method="get"
-                      action="{% url 'main:show_project' %}"
-                      class="project-search">
+                <form id="project-search-form" class="project-search">
                     <input type="search"
+                           id="search-input"
                            name="title"
                            value="{{ title_query }}"
                            placeholder="Search by project title"
@@ -30,117 +30,254 @@
                     <button type="submit" class="button">Search</button>
                 </form>
 
-                <div class="project-grid">
-                    {% for project in project_list %}
-                        <article class="project-card">
-                            {% if project.is_ongoing %}
-                                <span class="project-category">
-                                    {{ project.get_category_display }} &middot; (Since {{ project.started_at|date:"F Y" }})
-                                </span>
-                                {% else %}
-                                <span class="project-category">
-                                    {{ project.get_category_display }} &middot; ({{ project.started_at|date:"F Y" }} - {{ project.ended_at|date:"F Y" }})
-                                </span>
-                            {% endif %}
-
-                            <h2>{{ project.title }}</h2>
-                            <p class="project-description">
-                                {{ project.description }}
-                            </p>
-
-                            {% if project.images.all %}
-                                <div class="project-image">
-                                    <div class="project-slider">
-
-
-                                        {% for image in project.images.all %}
-                                            <input
-                                                type="radio"
-                                                name="project-slide-{{ project.id }}"
-                                                id="slide-{{ project.id }}-{{ image.order }}"
-
-                                                {% if forloop.first %}
-                                                    checked
-                                                {% endif %}
-                                            >
-                                        {% endfor %}
-
-
-                                    <div class="slides">
-                                        {% for image in project.images.all %}
-                                            <div class="slide">
-                                                <button
-                                                    type="button"
-                                                    class="slide-image-trigger"
-                                                    popovertarget="img-modal-{{ project.id }}-{{ image.order }}"
-                                                >
-                                                    <img
-                                                        src="{{ image.image }}"
-                                                        alt="{{ project.title }} image {{ image.order }}"
-                                                    >
-                                                </button>
-                                            </div>
-
-                                            <div
-                                                id="img-modal-{{ project.id }}-{{ image.order }}"
-                                                popover
-                                                class="image-modal"
-                                            >
-                                                <button
-                                                    type="button"
-                                                    class="image-modal__backdrop"
-                                                    popovertarget="img-modal-{{ project.id }}-{{ image.order }}"
-                                                    popovertargetaction="hide"
-                                                    aria-label="Tutup"
-                                                ></button>
-
-                                                <img
-                                                    src="{{ image.image }}"
-                                                    alt="{{ project.title }} image {{ image.order }}"
-                                                    class="image-modal__img"
-                                                >
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-
-                                        <div class="slider-dots">
-
-                                            {% for image in project.images.all %}
-                                                <label
-                                                    for="slide-{{ project.id }}-{{ image.order }}"
-                                                >
-                                                </label>
-                                            {% endfor %}
-
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-
-                            <div class="project-card-actions">
-                                <div class="project-actions">
-                                    {% if user.is_superuser or is_editor %}
-                                        <a href="{% url 'main:edit_project' project.id %}" class="button button-edit">Edit Project</a>
-                                        <a href="{% url 'main:add_project_image' project.id %}" class="button button-edit">Edit Image</a>
-                                    {% endif %}
-                                    {% include "components/project_star.html" with project=project %}
-                                    {% if user.is_superuser %}
-                                        {% include "components/project_delete_modal.html" with project=project %}
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                        </article>
-
-                    {% empty %}
-                        {% if title_query %}
-                            <p class="empty-state">There is no project with that title.</p>
-                        {% else %}
-                            <p class="empty-state">No project has been added yet.</p>
-                        {% endif %}
-                    {% endfor %}
+                <div id="loading" class="empty-state hide">
+                    <p>Loading projects...</p>
                 </div>
+
+                <div id="error" class="empty-state hide">
+                    <p>Failed to load project data. Please try again.</p>
+                </div>
+
+                <div id="empty" class="empty-state hide"></div>
+
+                <div id="grid" class="project-grid hide"></div>
             </div>
         </section>
     </main>
+
+    {% if user.is_superuser %}
+        {% include "components/project_form_modal.html" %}
+    {% endif %}
+
+    <script>
+    const BASE_PROJECTS_ENDPOINT = "{% url 'main:get_projects_json' %}";
+    const CREATE_PROJECT_ENDPOINT = "{% url 'main:create_project_ajax' %}";
+    const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    const IS_EDITOR = "{{ is_editor|yesno:'true,false' }}" === "true";
+    const CAN_EDIT_PROJECT = IS_SUPERUSER || IS_EDITOR;
+    const SEARCH_DEBOUNCE_DELAY = 300;
+    let searchDebounceTimer;
+    let projectsAbortController;
+
+    const loadingState = document.getElementById('loading');
+    const errorState = document.getElementById('error');
+    const emptyState = document.getElementById('empty');
+    const gridContainer = document.getElementById('grid');
+    const searchForm = document.getElementById('project-search-form');
+    const searchInput = document.getElementById('search-input');
+    const projectForm = document.getElementById('project-form');
+
+    function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+        loadingState.classList.toggle('hide', !showLoading);
+        errorState.classList.toggle('hide', !showError);
+        emptyState.classList.toggle('hide', !showEmpty);
+        gridContainer.classList.toggle('hide', !showGrid);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    function buildImagesHtml(images, projectId, projectTitle) {
+        if (!images || images.length === 0) return '';
+
+        const radios = images.map((img, i) => `
+            <input type="radio" name="project-slide-${projectId}" id="slide-${projectId}-${img.order}" ${i === 0 ? 'checked' : ''}>
+        `).join('');
+
+        const slides = images.map(img => `
+            <div class="slide">
+                <button type="button" class="slide-image-trigger" popovertarget="img-modal-${projectId}-${img.order}">
+                    <img src="${escapeHtml(img.url)}" alt="${escapeHtml(projectTitle)} image ${img.order}">
+                </button>
+            </div>
+            <div id="img-modal-${projectId}-${img.order}" popover class="image-modal">
+                <button type="button" class="image-modal__backdrop" popovertarget="img-modal-${projectId}-${img.order}" popovertargetaction="hide" aria-label="Close"></button>
+                <img src="${escapeHtml(img.url)}" alt="${escapeHtml(projectTitle)} image ${img.order}" class="image-modal__img">
+            </div>
+        `).join('');
+
+        const dots = images.map(img => `<label for="slide-${projectId}-${img.order}"></label>`).join('');
+
+        return `
+            <div class="project-image">
+                <div class="project-slider">
+                    ${radios}
+                    <div class="slides">${slides}</div>
+                    <div class="slider-dots">${dots}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildProjectCardElement(item) {
+        const project = item.fields;
+        const projectId = item.pk;
+
+        const articleElement = document.createElement('article');
+        articleElement.className = 'project-card';
+
+        const editProjectUrl = "{% url 'main:edit_project' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', projectId);
+        const addImageUrl = "{% url 'main:add_project_image' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', projectId);
+        const deleteUrl = "{% url 'main:delete_project' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', projectId);
+        const starUrl = "{% url 'main:toggle_star' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', projectId);
+
+        const statusText = project.is_ongoing
+            ? `${escapeHtml(project.category_display)} &middot; (Since ${escapeHtml(project.started_at)})`
+            : `${escapeHtml(project.category_display)} &middot; (${escapeHtml(project.started_at)} - ${escapeHtml(project.ended_at)})`;
+
+        const editHtml = CAN_EDIT_PROJECT ? `
+            <a href="${editProjectUrl}" class="button button-edit">Edit Project</a>
+            <a href="${addImageUrl}" class="button button-edit">Edit Image</a>
+        ` : '';
+
+        const isStarredClass = project.is_starred ? ' is-starred' : '';
+        const starText = project.is_starred ? 'Unstar' : 'Star';
+        const starTitle = project.is_starred ? 'Unstar this project' : 'Star this project';
+
+        const deleteHtml = IS_SUPERUSER ? `
+            <form method="post" action="${deleteUrl}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="button button-danger" onclick="return confirm('Are you sure you want to delete this project?');">Delete Project</button>
+            </form>
+        ` : '';
+
+        articleElement.innerHTML = `
+            <span class="project-category">${statusText}</span>
+            <h2>${escapeHtml(project.title)}</h2>
+            <p class="project-description">${escapeHtml(project.description)}</p>
+            ${buildImagesHtml(project.images, projectId, project.title)}
+            <div class="project-card-actions">
+                <div class="project-actions">
+                    ${editHtml}
+                    <form method="post" action="${starUrl}" class="star-form">
+                        {% csrf_token %}
+                        <button type="submit" class="button button-star-project${isStarredClass}" title="${starTitle}">
+                            <span aria-hidden="true">★</span>
+                            ${starText}
+                            <span class="star-count">${project.star_count}</span>
+                        </button>
+                    </form>
+                    ${deleteHtml}
+                </div>
+            </div>
+        `;
+
+        return articleElement;
+    }
+
+    async function fetchProjects(searchQuery = "") {
+        if (projectsAbortController) projectsAbortController.abort();
+        projectsAbortController = new AbortController();
+
+        try {
+            displayPageSection({ showLoading: true });
+
+            const url = searchQuery ? `${BASE_PROJECTS_ENDPOINT}?title=${encodeURIComponent(searchQuery)}` : BASE_PROJECTS_ENDPOINT;
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json' },
+                signal: projectsAbortController.signal,
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch data');
+
+            const projectData = await response.json();
+
+            if (projectData.length === 0) {
+                emptyState.textContent = searchQuery
+                    ? "There is no project with that title."
+                    : "No project has been added yet.";
+                displayPageSection({ showEmpty: true });
+            } else {
+                gridContainer.innerHTML = '';
+                projectData.forEach(item => {
+                    gridContainer.appendChild(buildProjectCardElement(item));
+                });
+                displayPageSection({ showGrid: true });
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            console.error('Error loading projects:', error);
+            displayPageSection({ showError: true });
+        }
+    }
+
+    function searchProjects() {
+        fetchProjects(searchInput.value.trim());
+    }
+
+    searchInput.addEventListener("input", function() {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(searchProjects, SEARCH_DEBOUNCE_DELAY);
+    });
+
+    searchForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+        clearTimeout(searchDebounceTimer);
+        searchProjects();
+    });
+
+    function closeProjectModal() {
+        document.getElementById("add-project-modal").hidePopover();
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function addProject(event) {
+        event.preventDefault();
+
+        const submitButton = projectForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(CREATE_PROJECT_ENDPOINT, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: new FormData(projectForm),
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                projectForm.reset();
+                closeProjectModal();
+                showToast('Success', 'New project added successfully!', 'success');
+                fetchProjects(searchInput.value.trim());
+            } else {
+                const errorMessages = result.errors
+                    ? Object.values(result.errors).flat().map(error => error.message)
+                    : [result.message || `An error occurred (status ${response.status}).`];
+                showToast('Failed to add project', errorMessages.join(' '), 'error');
+            }
+        } catch (error) {
+            console.error('Error adding project:', error);
+            showToast('Failed to add project', 'Could not connect to the server. Please try again.', 'error');
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    if (projectForm) {
+        projectForm.addEventListener('submit', addProject);
+    }
+
+    fetchProjects(searchInput.value.trim());
+    </script>
 {% endblock content %}
