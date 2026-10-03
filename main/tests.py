@@ -840,12 +840,20 @@ class ProjectTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "project.html")
-
-        self.assertContains(response, self.project.title)
-        self.assertContains(response, self.project.description)
-        self.assertContains(response, "Academic")
-
+        self.assertContains(response, 'id="grid"')
         self.assertContains(response, f'href="{reverse("main:show_main")}"')
+
+    def test_get_projects_json_contains_data(self):
+        response = self.client.get(reverse("main:get_projects_json"))
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(len(data), 1)
+        fields = data[0]["fields"]
+        self.assertEqual(fields["title"], self.project.title)
+        self.assertEqual(fields["description"], self.project.description)
+        self.assertEqual(fields["category_display"], "Academic")
 
     def test_empty_project_page(self):
         Project.objects.all().delete()
@@ -1106,12 +1114,16 @@ class ProjectCRUDTest(TestCase):
 
         response = self.client.get(reverse("main:show_project"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.project.title)
+        json_response = self.client.get(reverse("main:get_projects_json"))
+        self.assertEqual(json_response.status_code, 200)
+        self.assertContains(json_response, self.project.title)
 
         self.client.login(username="visitor", password="visitorpass123")
         response = self.client.get(reverse("main:show_project"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.project.title)
+        json_response = self.client.get(reverse("main:get_projects_json"))
+        self.assertEqual(json_response.status_code, 200)
+        self.assertContains(json_response, self.project.title)
 
 class ProjectImageTest(TestCase):
     def setUp(self):

@@ -166,13 +166,13 @@ class ProjectForm(ModelForm):
             ),
         }
 
-        def clean_title(self):
+    def clean_title(self):
             title = strip_tags(self.cleaned_data["title"]).strip()
             if not title:
                 raise ValidationError("Project title cannot contain only HTML tags.")
             return title
 
-        def clean_description(self):
+    def clean_description(self):
             return strip_tags(self.cleaned_data.get("description", "")).strip()
 
 
