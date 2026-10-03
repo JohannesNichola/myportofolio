@@ -518,32 +518,43 @@ class EducationTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "education.html")
-
-        self.assertContains(response, self.education.title)
-        self.assertContains(response, self.education.institution)
-        self.assertContains(response, self.education.description)
-        self.assertContains(response, "Formal-Edu")
-        self.assertContains(response, "Currently Studying")
-
+        self.assertContains(response, 'id="grid"')
         self.assertContains(response, f'href="{reverse("main:show_main")}"')
+
+    def test_get_educations_json_contains_data(self):
+        response = self.client.get(reverse("main:get_educations_json"))
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(len(data), 1)
+        fields = data[0]["fields"]
+        self.assertEqual(fields["title"], self.education.title)
+        self.assertEqual(fields["institution"], self.education.institution)
+        self.assertEqual(fields["description"], self.education.description)
+        self.assertEqual(fields["category_display"], "Formal-Edu")
+        self.assertTrue(fields["is_ongoing"])
 
     def test_empty_education_page(self):
         Education.objects.all().delete()
 
         response = self.client.get(reverse("main:show_education"))
-
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No education has been added yet.")
+
+        json_response = self.client.get(reverse("main:get_educations_json"))
+        self.assertEqual(json_response.json(), [])
 
     def test_completed_education(self):
         self.education.ended_at = date(2028, 6, 1)
         self.education.save()
 
-        response = self.client.get(reverse("main:show_education"))
+        response = self.client.get(reverse("main:get_educations_json"))
+        fields = response.json()[0]["fields"]
 
         self.assertFalse(self.education.is_ongoing)
-        self.assertContains(response, "No Longer Studying")
-        self.assertNotContains(response, "Currently Studying")
+        self.assertFalse(fields["is_ongoing"])
+        self.assertEqual(fields["ended_at"], "June 2028")
 
 class EducationCRUDTest(TestCase):
     def setUp(self):
@@ -727,7 +738,7 @@ class EducationCRUDTest(TestCase):
         )
 
         response = self.client.get(
-            reverse("main:show_education"), {"title": "Sistem"}
+            reverse("main:get_educations_json"), {"title": "Sistem"}
         )
 
         self.assertContains(response, "S1 Sistem Informasi")
@@ -838,12 +849,16 @@ class EducationCRUDTest(TestCase):
 
         response = self.client.get(reverse("main:show_education"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.education.title)
+        json_response = self.client.get(reverse("main:get_educations_json"))
+        self.assertEqual(json_response.status_code, 200)
+        self.assertContains(json_response, self.education.title)
 
         self.client.login(username="visitor", password="visitorpass123")
         response = self.client.get(reverse("main:show_education"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.education.title)
+        json_response = self.client.get(reverse("main:get_educations_json"))
+        self.assertEqual(json_response.status_code, 200)
+        self.assertContains(json_response, self.education.title)
 
             
 class ProjectTest(TestCase):
