@@ -45,39 +45,50 @@ class MainTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experience.html")
-
-        self.assertContains(response, self.experience.title)
-        self.assertContains(response, self.experience.company)
-        self.assertContains(response, self.experience.description)
-        self.assertContains(response, "Part-Time")
-        self.assertContains(response, "Currently Working")
-
+        self.assertContains(response, 'id="grid"')
         self.assertContains(
             response,
             f'href="{reverse("main:show_main")}"'
         )
 
+    def test_get_experiences_json_contains_data(self):
+        response = self.client.get(reverse("main:get_experiences_json"))
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(len(data), 1)
+        fields = data[0]["fields"]
+        self.assertEqual(fields["title"], self.experience.title)
+        self.assertEqual(fields["company"], self.experience.company)
+        self.assertEqual(fields["description"], self.experience.description)
+        self.assertEqual(fields["category_display"], "Part-Time")
+        self.assertTrue(fields["is_ongoing"])
+
     def test_empty_experience_page(self):
         Experience.objects.all().delete()
 
         response = self.client.get(reverse("main:show_experience"))
-
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
             "No experience has been added yet."
         )
 
+        json_response = self.client.get(reverse("main:get_experiences_json"))
+        self.assertEqual(json_response.json(), [])
+
     def test_completed_experience(self):
         self.experience.ended_at = date(2026, 8, 1)
-        
+
         self.experience.save()
 
-        response = self.client.get(reverse("main:show_experience"))
+        response = self.client.get(reverse("main:get_experiences_json"))
+        fields = response.json()[0]["fields"]
 
         self.assertFalse(self.experience.is_ongoing)
-        self.assertContains(response, "No Longer Working")
-        self.assertNotContains(response, "Currently Working")
+        self.assertFalse(fields["is_ongoing"])
+        self.assertEqual(fields["ended_at"], "August 2026")
 
 class MainPageTest(TestCase):
     def setUp(self):
@@ -142,32 +153,43 @@ class ExperienceTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "experience.html")
-
-        self.assertContains(response, self.experience.title)
-        self.assertContains(response, self.experience.company)
-        self.assertContains(response, self.experience.description)
-        self.assertContains(response, "Part-Time")
-        self.assertContains(response, "Currently Working")
-
+        self.assertContains(response, 'id="grid"')
         self.assertContains(response, f'href="{reverse("main:show_main")}"')
+
+    def test_get_experiences_json_contains_data(self):
+        response = self.client.get(reverse("main:get_experiences_json"))
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(len(data), 1)
+        fields = data[0]["fields"]
+        self.assertEqual(fields["title"], self.experience.title)
+        self.assertEqual(fields["company"], self.experience.company)
+        self.assertEqual(fields["description"], self.experience.description)
+        self.assertEqual(fields["category_display"], "Part-Time")
+        self.assertTrue(fields["is_ongoing"])
 
     def test_empty_experience_page(self):
         Experience.objects.all().delete()
 
         response = self.client.get(reverse("main:show_experience"))
-
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No experience has been added yet.")
+
+        json_response = self.client.get(reverse("main:get_experiences_json"))
+        self.assertEqual(json_response.json(), [])
 
     def test_completed_experience(self):
         self.experience.ended_at = date(2026, 8, 1)
         self.experience.save()
 
-        response = self.client.get(reverse("main:show_experience"))
+        response = self.client.get(reverse("main:get_experiences_json"))
+        fields = response.json()[0]["fields"]
 
         self.assertFalse(self.experience.is_ongoing)
-        self.assertContains(response, "No Longer Working")
-        self.assertNotContains(response, "Currently Working")
+        self.assertFalse(fields["is_ongoing"])
+        self.assertEqual(fields["ended_at"], "August 2026")
 
 class ExperienceCRUDTest(TestCase):
     def setUp(self):
@@ -352,7 +374,7 @@ class ExperienceCRUDTest(TestCase):
         )
 
         response = self.client.get(
-            reverse("main:show_experience"), {"title": "Asisten"}
+            reverse("main:get_experiences_json"), {"title": "Asisten"}
         )
 
         self.assertContains(response, "Asisten Dosen PBP")
@@ -462,12 +484,16 @@ class ExperienceCRUDTest(TestCase):
 
         response = self.client.get(reverse("main:show_experience"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.experience.title)
+        json_response = self.client.get(reverse("main:get_experiences_json"))
+        self.assertEqual(json_response.status_code, 200)
+        self.assertContains(json_response, self.experience.title)
 
         self.client.login(username="visitor", password="visitorpass123")
         response = self.client.get(reverse("main:show_experience"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.experience.title)
+        json_response = self.client.get(reverse("main:get_experiences_json"))
+        self.assertEqual(json_response.status_code, 200)
+        self.assertContains(json_response, self.experience.title)
 
 
 class EducationTest(TestCase):
