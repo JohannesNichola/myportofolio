@@ -1203,7 +1203,7 @@ h1, .brand {
    ========================================================= */
 
 
-   .toast-component {
+.toast-component {
     position: fixed;
     inset: auto 2rem 2rem auto;
     margin: 0;
@@ -1294,12 +1294,14 @@ h1, .brand {
     border: 1px solid var(--line);
     border-radius: var(--radius);
     box-shadow: 0 1rem 3rem rgba(28, 25, 23, 0.22);
+    color: var(--text-muted);
 }
 
 .project-form-modal__content h2 {
     margin: 0 2.5rem 1.25rem 0;
     font-family: "Space Grotesk", -apple-system, sans-serif;
     font-size: 1.5rem;
+    color: var(--accent);
 }
 
 .project-form-modal__close {

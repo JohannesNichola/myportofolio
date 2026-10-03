@@ -96,6 +96,29 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 - Memperbaiki `get_projects_json`, `get_experiences_json`, dan `get_educations_json` agar hanya mengembalikan field yang aman (title, description, category, dan sejenisnya) dan tidak lagi menyertakan `starred_by`.
 - Menambahkan dan memperbaiki unit test.
 
+### Tutorial 5
+
+- Membuat komponen toast (`components/toast.html`, `static/js/toast.js`) untuk notifikasi, dengan dukungan tipe sukses/error/normal.
+- Mengintegrasikan komponen toast ke `base.html` agar fungsi `showToast()` bisa dipanggil dari halaman mana pun.
+- Mengubah halaman Projects agar datanya dimuat lewat AJAX (`fetch()`) dari endpoint `get_projects_json`, bukan di-render langsung oleh server.
+- Menulis ulang `get_projects_json` secara manual (tidak lagi pakai `serializers.serialize`) agar bisa menyisipkan status star (`is_starred`) milik pengguna yang sedang login.
+- Menerapkan pencarian dengan debouncing pada halaman Projects.
+- Membuat modal (Popover API) berisi form tambah proyek pada halaman Projects, menggantikan form di halaman terpisah.
+- Membuat view `create_project_ajax` yang memvalidasi input lewat `ProjectForm`, memeriksa `is_superuser` di dalam view, dan membalas dengan JSON beserta status HTTP (201/400/403).
+- Mengirim form tambah proyek dengan `fetch()`, termasuk menyertakan token CSRF lewat header `X-CSRFToken`.
+- Menerapkan escaping (`escapeHtml`) pada setiap data yang disisipkan lewat JavaScript, dan `strip_tags` pada method `clean_title`/`clean_description` di `ProjectForm`, untuk mencegah serangan XSS.
+
+### Tugas 5
+
+- Mengubah halaman Experience dan Education agar datanya dimuat lewat AJAX (`fetch()`), bukan di-render langsung oleh server, mengikuti pola yang diterapkan pada Project di Tutorial 5.
+- Menulis ulang `get_experiences_json` dan `get_educations_json` secara manual (`JsonResponse`) agar menyertakan `star_count` dan `is_starred`.
+- Menambahkan view `create_experience_ajax` dan `create_education_ajax`
+- Menampilkan form tambah data di dalam modal pada halaman Experience dan Education, bukan di halaman terpisah.
+- Menambahkan pencarian dengan debouncing pada kedua halaman tersebut.
+- Memindahkan `getCookie` dan `escapeHtml` ke berkas JavaScript bersama `static/js/utils.js` agar tidak perlu disalin ulang di setiap halaman.
+- Menambahkan `clean_title`/`clean_description` pada `ExperienceForm` dan `EducationForm` untuk mencegah XSS.
+
+
 ## Pertanyaan Reflektif
 
 ### Tugas 1
@@ -122,6 +145,14 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 
 3. Ketika saya mengakses endpoint yang mengembalikan data dalam format JSON, misalnya `/api/experiences/`, alur dimulai ketika request diterima oleh view `get_experiences_json`. Di dalam view tersebut, saya mengambil data dari database menggunakan Django ORM, misalnya `Experience.objects.all()`, yang hasilnya berupa QuerySet, yaitu kumpulan objek model Python. Objek model tersebut tidak dapat langsung dikirim sebagai response karena format objek Python tidak dapat dipahami langsung oleh client (browser atau aplikasi lain) yang mengharapkan data dalam format teks standar seperti JSON. Oleh karena itu, saya perlu melakukan proses serialization menggunakan `serializers.serialize("json", experiences)`, yaitu proses mengubah objek model Django menjadi representasi teks dalam format JSON yang berisi field-field beserta value-nya dalam bentuk string terstruktur. Setelah proses serialization selesai, hasilnya saya kirim sebagai `HttpResponse` dengan `content_type="application/json"` agar client mengetahui bahwa data yang diterima berupa JSON. Di samping itu, ketika saya ingin menampilkan data tersebut di halaman web (seperti pada `show_experience`), saya perlu melakukan proses sebaliknya, yaitu deserialization, menggunakan `serializers.deserialize("json", ...)`, agar data JSON tersebut dapat diubah kembali menjadi objek model Django yang dapat diakses field-nya (misalnya `experience.title`) dan ditampilkan secara dinamis melalui template. Jadi, kita perlu melakukan proses serialization pada model Django sebelum datanya dikembalikan karena format objek Python tidak dapat dipahami langsung oleh client yang mengharapkan data dalam format teks standar seperti JSON.
 
+### Tugas 5
+
+1. Debouncing adalah teknik untuk menunda eksekusi sebuah fungsi sampai pengguna berhenti memicu event tersebut selama jeda waktu tertentu, dan jika event yang sama terpicu lagi sebelum jeda waktu itu habis, timer sebelumnya dibatalkan dan dihitung ulang dari awal. Pada fitur pencarian dengan AJAX, setiap karakter yang diketik pengguna pada kolom pencarian berpotensi memicu satu permintaan `fetch()` ke server. Dengan debouncing (misalnya jeda 300 milidetik), permintaan hanya benar-benar dikirim setelah pengguna berhenti mengetik sejenak, sehingga jumlah permintaan ke server berkurang drastis dan pengalaman pengguna tetap terasa responsif.
+
+2. Kata kunci `await` digunakan di dalam `async function` untuk menunggu sebuah `Promise` selesai diproses sebelum melanjutkan ke baris kode berikutnya. Jika tidak menggunakan `await`, `fetch()` akan tetap mengembalikan objek `Promise` yang masih dalam status "pending", dan baris kode setelahnya akan langsung dieksekusi tanpa menunggu respons dari server benar-benar diterima. Akibatnya, jika langsung mencoba mengakses data dari hasil `fetch()` tanpa `await`, yang akan diperoleh hanya objek `Promise` itu sendiri, bukan data JSON yang sebenarnya, sehingga kode akan error atau menghasilkan data yang tidak terdefinisi (`undefined`). Dengan `await`, kode pada baris tersebut akan berhenti sejenak tanpa memblokir keseluruhan browser, karena ini bersifat asynchronous sampai respons server benar-benar diterima, baru kemudian melanjutkan proses `response.json()` dan merender data ke halaman, sehingga urutan eksekusinya tetap sesuai yang diharapkan meskipun sifatnya asynchronous.
+
+3. Cross-Site Scripting (XSS) adalah jenis serangan ketika penyerang berhasil menyisipkan kode JavaScript berbahaya ke dalam halaman web, yang kemudian dieksekusi oleh browser pengguna lain yang membuka halaman tersebut. Data yang ditampilkan melalui AJAX/JavaScript lebih rentan terhadap serangan ini dibandingkan data yang ditampilkan langsung melalui template Django karena Django secara otomatis melakukan auto-escaping pada setiap variabel template (`{{ variabel }}`) sehingga browser menampilkannya sebagai teks biasa, bukan sebagai tag HTML yang dieksekusi. Namun, ketika data dari JSON disisipkan ke dalam HTML menggunakan JavaScript, proses auto-escaping dari Django tersebut tidak lagi berlaku, karena JavaScript tidak tahu bahwa data tersebut seharusnya hanya teks, sehingga tag HTML apa pun di dalam data akan diperlakukan sebagai kode HTML sungguhan oleh browser. Karena itulah saya menerapkan fungsi `escapeHtml` untuk melakukan proses escaping yang sama secara manual di sisi JavaScript sebelum data disisipkan ke `innerHTML`, serta `strip_tags` pada method `clean_<field>` di sisi server sebagai lapisan pertahanan tambahan agar tag HTML berbahaya sudah dibuang sejak data pertama kali disimpan.
+
 ## AI Disclosure
 
 ### Tugas 1
@@ -139,3 +170,7 @@ Dalam pengerjaan tugas ini, saya menggunakan GenAI Claude sebagai alat bantu unt
 ### Tugas 4
 
 Dalam pengerjaan tugas ini, saya menggunakan GenAI Claude untuk membantu merancang penerapan peran Editor secara konsisten pada Project, Experience, dan Education, termasuk membuat fungsi helper `is_editor()` dan `can_edit_portfolio_item()` agar logika pengecekan hak akses tidak perlu ditulis berulang di setiap fungsi. Claude juga membantu saya menemukan bagian fungsi CRUD yang ternyata belum memiliki proteksi di sisi server (hanya disembunyikan di template), serta membantu memperbaiki endpoint JSON agar tidak membocorkan data `starred_by` ke publik tanpa login. Selain itu, saya meminta bantuan AI untuk melengkapi unit test agar seluruh skenario peran (pengunjung, pengguna biasa, Editor, dan superuser) tercakup pada ketiga bagian tersebut. Meskipun begitu, saya tetap menjalankan `python manage.py test` dan mencoba secara manual melalui `runserver` di setiap tahap, membuat Group `Editor` secara langsung lewat `/admin/`, serta membaca ulang setiap kode yang diberikan AI untuk memastikan saya memahami alurnya sebelum di-commit, sesuai kebutuhan tugas.
+
+### Tugas 5
+
+Dalam pengerjaan tugas ini, saya menggunakan GenAI Claude untuk tiga hal utama. Pertama, Claude membantu saya memindahkan fungsi `getCookie` dan `escapeHtml` ke berkas `static/js/utils.js` sehingga bisa dipakai secara global di semua halaman AJAX, tanpa perlu menyalin ulang kode yang sama di setiap halaman. Kedua, Claude membantu saya membuat dan memperbaiki unit test. Ketiga, Claude membantu menambah pemahaman saya tentang JavaScript, khususnya soal transisi dari pola Django murni ke JavaScript manual. Meskipun begitu, saya tetap menjalankan `coverage run manage.py test` dan `coverage report` setelah setiap perubahan, serta mencoba fitur Add Experience dan Add Education secara manual lewat `runserver`.

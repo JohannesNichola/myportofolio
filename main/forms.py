@@ -130,6 +130,15 @@ class EducationForm(ModelForm):
             ),
         }
 
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data["title"]).strip()
+        if not title:
+            raise ValidationError("Education title cannot contain only HTML tags.")
+        return title
+
+    def clean_description(self):
+        return strip_tags(self.cleaned_data.get("description", "")).strip()
+
 class ProjectForm(ModelForm):
     class Meta:
         model = Project
