@@ -8,6 +8,7 @@
             <div class="container">
                 <h1>{% if experience %}Edit {{ experience.title }}{% else %}Add New Experience{% endif %}</h1>
                 <form method="post"
+                      id="experience-edit-form"
                       action="{% if experience %}{% url 'main:edit_experience' experience.id %}{% else %}{% url 'main:create_experience' %}{% endif %}"
                       class="project-form">
                     {% csrf_token %}
@@ -28,4 +29,51 @@
             </div>
         </section>
     </main>
+
+    {% if experience %}
+    <script>
+    (function() {
+        const ENDPOINT = "{% url 'api:experience-detail' experience.id %}";
+        const form = document.getElementById('experience-edit-form');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            try {
+                const fields = new FormData(form);
+                const payload = Object.fromEntries(
+                    ['title', 'company', 'description', 'category', 'thumbnail', 'started_at', 'ended_at']
+                        .map(name => [name, fields.get(name)])
+                );
+                if (!payload.ended_at) delete payload.ended_at;
+                if (!payload.thumbnail) payload.thumbnail = '';
+
+                const response = await fetch(ENDPOINT, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const messages = Object.values(data).flat().filter(value => typeof value === 'string');
+                    throw new Error(messages.join(' ') || `Request failed (HTTP ${response.status}).`);
+                }
+
+                showToast('Success', 'Experience updated successfully!', 'success');
+                window.location.href = "{% url 'main:show_experience' %}";
+            } catch (error) {
+                showToast('Failed to update experience', error.message, 'error');
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+    })();
+    </script>
+    {% endif %}
 {% endblock content %}
