@@ -49,11 +49,14 @@
         {% include "components/education_form_modal.html" %}
     {% endif %}
 
+    {% csrf_token %}
     <script>
-    const BASE_EDUCATIONS_ENDPOINT = "{% url 'main:get_educations_json' %}";
-    const CREATE_EDUCATION_ENDPOINT = "{% url 'main:create_education_ajax' %}";
+    const BASE_EDUCATIONS_ENDPOINT = "{% url 'api:education-list' %}";
+    const DETAIL_EDUCATION_ENDPOINT = "{% url 'api:education-detail' '00000000-0000-0000-0000-000000000000' %}";
+    const STAR_EDUCATION_ENDPOINT = "{% url 'api:education-star' '00000000-0000-0000-0000-000000000000' %}";
     const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
     const IS_EDITOR = "{{ is_editor|yesno:'true,false' }}" === "true";
+    const IS_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
     const CAN_EDIT_EDUCATION = IS_SUPERUSER || IS_EDITOR;
     const SEARCH_DEBOUNCE_DELAY = 300;
     let searchDebounceTimer;
@@ -74,16 +77,17 @@
         gridContainer.classList.toggle('hide', !showGrid);
     }
 
-    function buildEducationCardElement(item) {
-        const education = item.fields;
-        const educationId = item.pk;
+    function educationEndpoint(pattern, id) {
+        return pattern.replace('00000000-0000-0000-0000-000000000000', id);
+    }
+
+    function buildEducationCardElement(education) {
+        const educationId = education.id;
 
         const articleElement = document.createElement('article');
         articleElement.className = 'education-card';
 
         const editEducationUrl = "{% url 'main:edit_education' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', educationId);
-        const deleteUrl = "{% url 'main:delete_education' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', educationId);
-        const starUrl = "{% url 'main:toggle_star_education' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', educationId);
 
         const statusText = education.is_ongoing
             ? `Currently Studying (Since ${escapeHtml(education.started_at)})`
@@ -97,11 +101,20 @@
         const starText = education.is_starred ? 'Unstar' : 'Star';
         const starTitle = education.is_starred ? 'Unstar this education' : 'Star this education';
 
+        const starHtml = IS_AUTHENTICATED ? `
+            <button type="button" class="button button-star${isStarredClass}" title="${starTitle}" data-action="star" data-id="${escapeHtml(educationId)}">
+                <span aria-hidden="true">★</span>
+                ${starText}
+                <span class="star-count">${education.star_count}</span>
+            </button>
+        ` : `
+            <a href="{% url 'main:login' %}" class="button button-star" title="Login to star this education">
+                <span aria-hidden="true">★</span> Star <span class="star-count">${education.star_count}</span>
+            </a>
+        `;
+
         const deleteHtml = IS_SUPERUSER ? `
-            <form method="post" action="${deleteUrl}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="button button-danger" onclick="return confirm('Are you sure you want to delete this education?');">Delete</button>
-            </form>
+            <button type="button" class="button button-danger" data-action="delete" data-id="${escapeHtml(educationId)}">Delete</button>
         ` : '';
 
         articleElement.innerHTML = `
@@ -113,14 +126,7 @@
             <div class="project-card-actions">
                 <div class="project-actions">
                     ${editHtml}
-                    <form method="post" action="${starUrl}" class="star-form">
-                        {% csrf_token %}
-                        <button type="submit" class="button button-star${isStarredClass}" title="${starTitle}">
-                            <span aria-hidden="true">★</span>
-                            ${starText}
-                            <span class="star-count">${education.star_count}</span>
-                        </button>
-                    </form>
+                    ${starHtml}
                     ${deleteHtml}
                 </div>
             </div>
@@ -153,8 +159,8 @@
                 displayPageSection({ showEmpty: true });
             } else {
                 gridContainer.innerHTML = '';
-                educationData.forEach(item => {
-                    gridContainer.appendChild(buildEducationCardElement(item));
+                educationData.forEach(education => {
+                    gridContainer.appendChild(buildEducationCardElement(education));
                 });
                 displayPageSection({ showGrid: true });
             }
@@ -184,6 +190,27 @@
         document.getElementById("add-education-modal").hidePopover();
     }
 
+    function apiErrorMessage(data, status) {
+        const messages = Object.values(data).flat().filter(value => typeof value === 'string');
+        return messages.join(' ') || `Request failed (HTTP ${status}).`;
+    }
+
+    async function writeEducation(url, method, payload) {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: payload === undefined ? undefined : JSON.stringify(payload),
+        });
+        if (response.status === 204) return null;
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(apiErrorMessage(data, response.status));
+        return data;
+    }
+
     async function addEducation(event) {
         event.preventDefault();
 
@@ -191,27 +218,23 @@
         submitButton.disabled = true;
 
         try {
-            const response = await fetch(CREATE_EDUCATION_ENDPOINT, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': getCookie('csrftoken') },
-                body: new FormData(educationForm),
-            });
-            const result = await response.json().catch(() => ({}));
+            const fields = new FormData(educationForm);
+            const payload = Object.fromEntries(
+                ['title', 'institution', 'description', 'category', 'thumbnail', 'started_at', 'ended_at']
+                    .map(name => [name, fields.get(name)])
+            );
+            if (!payload.ended_at) delete payload.ended_at;
+            if (!payload.thumbnail) payload.thumbnail = '';
 
-            if (response.ok) {
-                educationForm.reset();
-                closeEducationModal();
-                showToast('Success', 'New education added successfully!', 'success');
-                fetchEducations(searchInput.value.trim());
-            } else {
-                const errorMessages = result.errors
-                    ? Object.values(result.errors).flat().map(error => error.message)
-                    : [result.message || `An error occurred (status ${response.status}).`];
-                showToast('Failed to add education', errorMessages.join(' '), 'error');
-            }
+            await writeEducation(BASE_EDUCATIONS_ENDPOINT, 'POST', payload);
+
+            educationForm.reset();
+            closeEducationModal();
+            showToast('Success', 'New education added successfully!', 'success');
+            fetchEducations(searchInput.value.trim());
         } catch (error) {
             console.error('Error adding education:', error);
-            showToast('Failed to add education', 'Could not connect to the server. Please try again.', 'error');
+            showToast('Failed to add education', error.message, 'error');
         } finally {
             submitButton.disabled = false;
         }
@@ -220,6 +243,29 @@
     if (educationForm) {
         educationForm.addEventListener('submit', addEducation);
     }
+
+    gridContainer.addEventListener('click', async function(event) {
+        const button = event.target.closest('button[data-action]');
+        if (!button || button.disabled) return;
+
+        const action = button.dataset.action;
+        if (action === 'delete' && !window.confirm('Are you sure you want to delete this education?')) return;
+
+        button.disabled = true;
+        try {
+            const pattern = action === 'star' ? STAR_EDUCATION_ENDPOINT : DETAIL_EDUCATION_ENDPOINT;
+            await writeEducation(
+                educationEndpoint(pattern, button.dataset.id),
+                action === 'star' ? 'POST' : 'DELETE',
+            );
+            showToast('Success', action === 'star' ? 'Star updated.' : 'Education deleted.', 'success');
+            fetchEducations(searchInput.value.trim());
+        } catch (error) {
+            showToast('Request failed', error.message, 'error');
+        } finally {
+            button.disabled = false;
+        }
+    });
 
     fetchEducations(searchInput.value.trim());
     </script>

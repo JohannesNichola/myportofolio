@@ -8,6 +8,7 @@
             <div class="container">
                 <h1>{% if education %}Edit {{ education.title }}{% else %}Add New Education{% endif %}</h1>
                 <form method="post"
+                      id="education-edit-form"
                       action="{% if education %}{% url 'main:edit_education' education.id %}{% else %}{% url 'main:create_education' %}{% endif %}"
                       class="project-form">
                     {% csrf_token %}
@@ -28,4 +29,51 @@
             </div>
         </section>
     </main>
+
+    {% if education %}
+    <script>
+    (function() {
+        const ENDPOINT = "{% url 'api:education-detail' education.id %}";
+        const form = document.getElementById('education-edit-form');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            try {
+                const fields = new FormData(form);
+                const payload = Object.fromEntries(
+                    ['title', 'institution', 'description', 'category', 'thumbnail', 'started_at', 'ended_at']
+                        .map(name => [name, fields.get(name)])
+                );
+                if (!payload.ended_at) delete payload.ended_at;
+                if (!payload.thumbnail) payload.thumbnail = '';
+
+                const response = await fetch(ENDPOINT, {
+                    method: 'PATCH',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const messages = Object.values(data).flat().filter(value => typeof value === 'string');
+                    throw new Error(messages.join(' ') || `Request failed (HTTP ${response.status}).`);
+                }
+
+                showToast('Success', 'Education updated successfully!', 'success');
+                window.location.href = "{% url 'main:show_education' %}";
+            } catch (error) {
+                showToast('Failed to update education', error.message, 'error');
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+    })();
+    </script>
+    {% endif %}
 {% endblock content %}
