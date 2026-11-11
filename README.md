@@ -139,6 +139,15 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 - Memastikan view lama sudah konsisten dengan aturan peran: Editor hanya bisa mengedit, sedangkan membuat dan menghapus hanya untuk superuser.
 - Menambahkan `ExperienceAPITest` dan `EducationAPITest` yang mencakup keempat peran, validasi input, star, pengecekan isi database pada test penolakan, dan test CSRF.
 
+### Tutorial 8
+
+- Memasang Flutter SDK (Dart SDK sudah ikut di dalamnya), mendaftarkan `flutter/bin` ke variabel PATH, dan memverifikasi instalasi dengan `flutter --version` dan `dart --version`.
+- Membuat proyek aplikasi mobile `myportofolio_mobile` dengan `flutter create` pada repositori terpisah, lalu menjalankannya di Google Chrome dengan `flutter run -d chrome`.
+- Memisahkan halaman menu ke `lib/menu.dart` dari `main.dart`, lalu mengubah tema warna aplikasi dengan `ColorScheme.fromSeed` (seed indigo, secondary amber).
+- Mengubah `MyHomePage` dari `StatefulWidget` menjadi `StatelessWidget` karena halaman menu bersifat statis.
+- Membuat widget reusable `InfoCard` untuk menampilkan NPM, nama, dan kelas, serta model `ItemHomepage` dan widget `ItemCard` yang menampilkan `SnackBar` ketika ditekan.
+- Menyusun tampilan halaman menu dengan `Scaffold`, `AppBar`, `Padding`, `Column`, `Row`, dan `GridView.count`.
+
 ## Pertanyaan Reflektif
 
 ### Tugas 1
