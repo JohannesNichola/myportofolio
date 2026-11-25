@@ -148,6 +148,13 @@ Website portofolio pribadi yang dikembangkan sebagai proyek individu mata kuliah
 - Membuat widget reusable `InfoCard` untuk menampilkan NPM, nama, dan kelas, serta model `ItemHomepage` dan widget `ItemCard` yang menampilkan `SnackBar` ketika ditekan.
 - Menyusun tampilan halaman menu dengan `Scaffold`, `AppBar`, `Padding`, `Column`, `Row`, dan `GridView.count`.
 
+### Tutorial 10
+
+- Menambahkan `django-cors-headers` dan `rest_framework.authtoken`, lalu mengatur `CorsMiddleware`, `CORS_ALLOW_ALL_ORIGINS` (dibatasi saat `PRODUCTION`), dan `10.0.2.2` pada `ALLOWED_HOSTS` agar API dapat diakses dari aplikasi Flutter.
+- Mengaktifkan `TokenAuthentication` sebelum `SessionAuthentication` pada `DEFAULT_AUTHENTICATION_CLASSES` dan menghapus `@authentication_classes([SessionAuthentication])` pada setiap API view, sehingga permintaan tanpa autentikasi mendapat 401.
+- Mendaftarkan `auth/token/` (`obtain_auth_token`) dan membuat `api_logout` di `auth/logout/` yang menghapus token pemanggil dan mengembalikan 204.
+- Menyesuaikan test API (tamu mendapat 401) dan menambahkan `TokenAuthAPITest` untuk login token, pembuatan project dengan token, token tidak valid, dan logout.
+
 ## Pertanyaan Reflektif
 
 ### Tugas 1
