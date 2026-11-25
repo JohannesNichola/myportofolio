@@ -408,3 +408,74 @@ class EducationAPITest(APITestCase):
             self.list_url, self.payload, format="json", HTTP_X_CSRFTOKEN=token,
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    
+
+class TokenAuthAPITest(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_superuser(
+            username="tokenowner", password="test-password", email="token@example.com",
+        )
+        self.visitor = User.objects.create_user(username="tokenvisitor", password="test-password")
+        self.token_url = reverse("api:token")
+        self.logout_url = reverse("api:logout")
+        self.list_url = reverse("api:project-list")
+        self.payload = {
+            "title": "Token Project",
+            "description": "Created from mobile",
+            "category": "academic",
+            "started_at": "2026-02-01",
+        }
+
+    def _login(self, username="tokenowner"):
+        response = self.client.post(
+            self.token_url, {"username": username, "password": "test-password"}, format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return response.data["token"]
+
+    def test_token_login_with_valid_credentials(self):
+        self.assertTrue(self._login())
+
+    def test_token_login_with_wrong_password(self):
+        response = self.client.post(
+            self.token_url, {"username": "tokenowner", "password": "wrong"}, format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_owner_can_create_project_with_token(self):
+        token = self._login()
+        response = self.client.post(
+            self.list_url, self.payload, format="json", HTTP_AUTHORIZATION=f"Token {token}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Project.objects.filter(title="Token Project").count(), 1)
+
+    def test_non_owner_with_token_cannot_create_project(self):
+        token = self._login("tokenvisitor")
+        response = self.client.post(
+            self.list_url, self.payload, format="json", HTTP_AUTHORIZATION=f"Token {token}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_missing_or_invalid_token_returns_401(self):
+        self.assertEqual(
+            self.client.post(self.list_url, self.payload, format="json").status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+        response = self.client.post(
+            self.list_url, self.payload, format="json", HTTP_AUTHORIZATION="Token invalid",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_public_list_does_not_need_token(self):
+        self.assertEqual(self.client.get(self.list_url).status_code, status.HTTP_200_OK)
+
+    def test_logout_deletes_token(self):
+        token = self._login()
+        auth = {"HTTP_AUTHORIZATION": f"Token {token}"}
+        self.assertEqual(self.client.post(self.logout_url, **auth).status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.client.post(self.logout_url, **auth).status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_requires_authentication(self):
+        self.assertEqual(self.client.post(self.logout_url).status_code, status.HTTP_401_UNAUTHORIZED)
